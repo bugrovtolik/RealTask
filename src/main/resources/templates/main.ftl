@@ -6,14 +6,7 @@
     <@l.logout />
     <p><a href="/user">Список пользователей</a></p>
 </div>
-<div>
-    <form method="post">
-        <div><label>Заголовок:<br/><input type="text" name="title" size="40"></label></div>
-        <div><label>Описание:<br/><textarea style="overflow:auto;resize:none" rows="20" cols="40" name="description"></textarea></label></div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button type="submit">Добавить</button>
-    </form>
-</div>
+    <p><a href="/serviceAdd">Добавить услугу</a></p>
     <div>Список услуг</div>
 <div>
     <form method="get" action="/main">

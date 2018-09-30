@@ -44,8 +44,12 @@ public class MainController {
     @PostMapping("/main")
     public String add(@AuthenticationPrincipal User user,
                       @RequestParam String title,
-                      @RequestParam String description, Model model) {
-        Service service = new Service(title, description, user);
+                      @RequestParam String description,
+                      @RequestParam(required = false, defaultValue = "") String secret
+                      @RequestParam String lat,
+                      @RequestParam String lng,
+                      Model model) {
+        Service service = new Service(title, description, secret, lat, lng, user);
         serviceRepo.save(service);
 
         Iterable<Service> services = serviceRepo.findAll();

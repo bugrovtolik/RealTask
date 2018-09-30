@@ -10,6 +10,9 @@ public class Service {
 
     private String title;
     private String description;
+    private String secret;
+    private String lat;
+    private String lng;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -17,9 +20,12 @@ public class Service {
 
     public Service() {}
 
-    public Service(String title, String description, User user) {
+    public Service(String title, String description, String secret, String lat, String lng, User user) {
         this.title = title;
         this.description = description;
+        this.secret = secret;
+        this.lat = lat;
+        this.lng = lng;
         this.author = user;
     }
 
@@ -34,15 +40,19 @@ public class Service {
     public String getDescription() {
         return description;
     }
-
-    public void setId(Integer id) {
-        this.id = id;
+    
+    public String getSecret() {
+        return secret;
     }
-
-    public void setTitle(String title) {
-        this.title = title;
+    
+    public String getLat() {
+        return lat;
     }
-
+    
+    public String getLng() {
+        return lng;
+    }
+    
     public User getAuthor() {
         return author;
     }
@@ -51,11 +61,31 @@ public class Service {
         return author.getUsername();
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public void setAuthor(User author) {
         this.author = author;
     }
-
-    public void setDescription(String description) {
-        this.description = description;
+    
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+    
+    public void setLat(String lat) {
+        this.lat = lat;
+    }
+    
+    public void setLng(String lng) {
+        this.lng = lng;
     }
 }

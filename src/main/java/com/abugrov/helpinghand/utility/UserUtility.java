@@ -22,9 +22,13 @@ import java.util.stream.Collectors;
 public class UserUtility implements UserDetailsService {
     @Value("${upload.path}")
     private String uploadPath;
+
+    @Value("${hostname}")
+    private String hostname;
+
     private final UserRepo userRepo;
     private final MailSender mailSender;
-    private final PasswordEncoder passwordEncoder;
+    public final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserUtility(UserRepo userRepo, MailSender mailSender, PasswordEncoder passwordEncoder) {
@@ -62,8 +66,8 @@ public class UserUtility implements UserDetailsService {
                 "Приветсвуем Вас, %s!\n" +
                 "Благодарим за регистрацию на сайте Helping Hand.\n" +
                 "Пожалуйста, проследуйте по следующей ссылке для завершения " +
-                "регистрации: http://localhost:8080/activate/%s",
-                user.getUsername(), user.getActivationCode()
+                "регистрации: http://%s/activate/%s",
+                user.getUsername(), hostname, user.getActivationCode()
         );
 
         sendMessage(user,"Код активации для Helping Hand", message);
@@ -140,8 +144,8 @@ public class UserUtility implements UserDetailsService {
 
         String message = String.format(
             "Приветсвуем Вас, %s!\n" +
-            "Пройдите по ссылке для создания нового пароля: http://localhost:8080/user/recover/%s",
-            user.getUsername(), user.getActivationCode()
+            "Пройдите по ссылке для создания нового пароля: http://%s/user/recover/%s",
+            user.getUsername(), hostname, user.getActivationCode()
         );
 
         sendMessage(user,"Восстановление пароля на Helping Hand", message);

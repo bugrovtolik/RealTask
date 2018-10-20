@@ -17,14 +17,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private UserUtility userUtility;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserUtility userUtility;
 
-    @Bean
-    public PasswordEncoder getPasswordEncoder() {
-        return new BCryptPasswordEncoder(8);
+    @Autowired
+    public WebSecurityConfig(UserUtility userUtility) {
+        this.userUtility = userUtility;
     }
 
     @Override
@@ -52,6 +49,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userUtility)
-                .passwordEncoder(passwordEncoder);
+                .passwordEncoder(userUtility.passwordEncoder);
     }
 }

@@ -7,9 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
+import java.util.Map;
 
 @Controller
 public class MainController {
@@ -21,8 +25,8 @@ public class MainController {
     }
 
     @GetMapping("/")
-    public String index(Model model) {
-        return "index";
+    public String index() {
+        return "redirect:/main";
     }
 
     @GetMapping("/main")
@@ -41,15 +45,25 @@ public class MainController {
         return "main";
     }
 
-    @PostMapping("/main")
+    @GetMapping("/addService")
+    public String addService() {
+        return "addService";
+    }
+
+    @PostMapping("/addService")
     public String add(@AuthenticationPrincipal User user,
-                      @RequestParam String title,
-                      @RequestParam String description,
-                      @RequestParam(required = false, defaultValue = "") String secret
-                      @RequestParam String lat,
-                      @RequestParam String lng,
+                      @Valid Service service,
+                      BindingResult bindingResult,
                       Model model) {
-        Service service = new Service(title, description, secret, lat, lng, user);
+        service.setAuthor(user);
+
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = ControllerUtility.getErrors(bindingResult);
+            model.mergeAttributes(errors);
+
+            return "addService";
+        }
+
         serviceRepo.save(service);
 
         Iterable<Service> services = serviceRepo.findAll();

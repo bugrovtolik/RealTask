@@ -1,6 +1,9 @@
 <#import "parts/common.ftl" as c>
 
 <@c.page>
-<h1>Helping Hand Service</h1>
-<a href="/main">Войти</a>
+    <#if message??>
+        <div class="alert alert-${messageType}" role="alert">
+            ${message}
+        </div>
+    </#if>
 </@c.page>

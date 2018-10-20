@@ -1,17 +1,27 @@
 package com.abugrov.helpinghand.domain;
 
+import org.hibernate.validator.constraints.Length;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 public class Service {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Long id;
 
+    @NotBlank(message = "Вы забыли указать заголовок!")
+    @Length(max = 255, message = "Заголовок слишком длинный (более 255 символов)")
     private String title;
+    @NotBlank(message = "Вы забыли указать описание!")
+    @Length(max = 2000, message = "Описание слишком длинное (более 2000 символов)")
     private String description;
+    @Length(max = 500, message = "Постарайтесь уложиться в 500 символов!")
     private String secret;
+    @NotBlank
     private String lat;
+    @NotBlank
     private String lng;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -29,7 +39,7 @@ public class Service {
         this.author = user;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
@@ -61,7 +71,7 @@ public class Service {
         return author.getUsername();
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

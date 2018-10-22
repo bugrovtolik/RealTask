@@ -2,7 +2,6 @@
 
 <@c.page>
     <b>Восстановление забытого пароля</b>
-    ${message!}
     <form method="post" action="/user/forgotPassword">
         <div class="form-group row">
             <label class="col-sm-2 col-form-label">Ваш Email на сайте</label>

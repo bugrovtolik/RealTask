@@ -70,7 +70,7 @@
 
     <input type="hidden" name="_csrf" value="${_csrf.token}" />
     <button class="btn btn-primary" type="submit"><#if isRegisterForm>Создать<#else>Войти</#if></button>
-    <a href="/user/forgotPassword">Забыли пароль?</a>
+    <#if !isRegisterForm><a href="/user/lostPassword">Забыли пароль?</a></#if>
 </form>
 
 

@@ -2,7 +2,7 @@ package com.abugrov.helpinghand.controller;
 
 import com.abugrov.helpinghand.domain.Role;
 import com.abugrov.helpinghand.domain.User;
-import com.abugrov.helpinghand.utility.UserUtility;
+import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,17 +20,17 @@ import java.util.Map;
 @Controller
 @RequestMapping("/user")
 public class UserController {
-    private final UserUtility userUtility;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserUtility userUtility) {
-        this.userUtility = userUtility;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public String userList(Model model) {
-        model.addAttribute("users", userUtility.findAll());
+        model.addAttribute("users", userService.findAll());
 
         return "userList";
     }
@@ -52,7 +52,7 @@ public class UserController {
             @RequestParam Map<String, String> form,
             @RequestParam("userId") User user
     ) throws IOException {
-        userUtility.saveUser(user, username, form, file);
+        userService.saveUser(user, username, form, file);
 
         return "redirect:/user";
     }
@@ -71,7 +71,7 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             RedirectAttributes redirectAttrs
     ) throws IOException {
-        if (userUtility.updateAvatar(user, file)) {
+        if (userService.updateAvatar(user, file)) {
             redirectAttrs.addFlashAttribute("avatarMessage", "Изображение профиля успешно изменено!");
             redirectAttrs.addFlashAttribute("messageType", "success");
         } else {
@@ -91,8 +91,8 @@ public class UserController {
             RedirectAttributes redirectAttrs
     ) {
         if (newpass.equals(newpass2)) {
-            if (userUtility.isActualPassword(user, oldpass)) {
-                userUtility.updatePassword(user, newpass);
+            if (userService.isActualPassword(user, oldpass)) {
+                userService.updatePassword(user, newpass);
                 redirectAttrs.addFlashAttribute("passwordMessage", "Пароль успешно изменён!");
                 redirectAttrs.addFlashAttribute("messageType", "success");
             } else {
@@ -109,7 +109,7 @@ public class UserController {
 
     @GetMapping("recover/{code}")
     public String recoverCode(Model model, @PathVariable String code) {
-        UserDetails user = userUtility.findByActivationCode(code);
+        UserDetails user = userService.findByActivationCode(code);
 
         if (user == null) {
             model.addAttribute("messageType","danger");
@@ -128,11 +128,11 @@ public class UserController {
             @RequestParam String newpass2,
             @RequestParam String username
     ) {
-        User user = userUtility.findByUsername(username);
+        User user = userService.findByUsername(username);
 
         if (newpass.equals(newpass2)) {
-            userUtility.updatePassword(user, newpass);
-            userUtility.cleanActivationCode(user);
+            userService.updatePassword(user, newpass);
+            userService.cleanActivationCode(user);
             model.addAttribute("message", "Пароль успешно изменён!");
             model.addAttribute("messageType", "success");
         } else {
@@ -146,23 +146,23 @@ public class UserController {
         return "login";
     }
 
-    @GetMapping("forgotPassword")
+    @GetMapping("lostPassword")
     public String forgotPassword() {
-        return "forgotPassword";
+        return "lostPassword";
     }
 
-    @PostMapping("forgotPassword")
+    @PostMapping("lostPassword")
     public String sendNewPassword(Model model, @RequestParam String email) {
         if (StringUtils.isEmpty(email)) {
-            return "forgotPassword";
+            return "lostPassword";
         }
 
-        User user = userUtility.findByEmail(email);
+        User user = userService.findByEmail(email);
         if (user == null) {
             model.addAttribute("messageType","danger");
             model.addAttribute("message", "Пользователь не найден!");
         } else {
-            userUtility.recover(user);
+            userService.recover(user);
             model.addAttribute("messageType","success");
             model.addAttribute("message", "Письмо с ссылкой для создания нового пароля отправлено Вам на почту!");
         }

@@ -1,4 +1,4 @@
-package com.abugrov.helpinghand.utility;
+package com.abugrov.helpinghand.service;
 
 import com.abugrov.helpinghand.domain.Role;
 import com.abugrov.helpinghand.domain.User;
@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class UserUtility implements UserDetailsService {
+public class UserService implements UserDetailsService {
     @Value("${upload.path}")
     private String uploadPath;
 
@@ -31,7 +31,7 @@ public class UserUtility implements UserDetailsService {
     public final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserUtility(UserRepo userRepo, MailSender mailSender, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepo userRepo, MailSender mailSender, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.mailSender = mailSender;
         this.passwordEncoder = passwordEncoder;

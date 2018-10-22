@@ -2,8 +2,7 @@ package com.abugrov.helpinghand.controller;
 
 import com.abugrov.helpinghand.domain.User;
 import com.abugrov.helpinghand.domain.dto.CaptchaResponseDto;
-import com.abugrov.helpinghand.utility.UserUtility;
-import org.hibernate.mapping.Collection;
+import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -28,12 +27,12 @@ public class RegistrationController {
     @Value("${recaptcha.secret}")
     private String secret;
 
-    private final UserUtility userUtility;
+    private final UserService userService;
     private final RestTemplate restTemplate;
 
     @Autowired
-    public RegistrationController(UserUtility userUtility, RestTemplate restTemplate) {
-        this.userUtility = userUtility;
+    public RegistrationController(UserService userService, RestTemplate restTemplate) {
+        this.userService = userService;
         this.restTemplate = restTemplate;
     }
 
@@ -72,12 +71,12 @@ public class RegistrationController {
             return "registration";
         }
 
-        if (userUtility.findByEmail(user.getEmail()) != null) {
+        if (userService.findByEmail(user.getEmail()) != null) {
             model.addAttribute("emailError", "Пользователь с таким email уже зарегистрирован!");
             return "registration";
         }
 
-        if (!userUtility.addUser(user)) {
+        if (!userService.addUser(user)) {
             model.addAttribute("usernameError", "Такой пользователь уже зарегистрирован!");
             return "registration";
         }
@@ -90,7 +89,7 @@ public class RegistrationController {
 
     @GetMapping("/activate/{code}")
     public String activate(Model model, @PathVariable String code) {
-        boolean isActivated = userUtility.activateUser(code);
+        boolean isActivated = userService.activateUser(code);
 
         if (isActivated) {
             model.addAttribute("messageType","success");
@@ -100,6 +99,6 @@ public class RegistrationController {
             model.addAttribute("message","Код активации недействителен или устарел!");
         }
 
-        return "index";
+        return "login";
     }
 }

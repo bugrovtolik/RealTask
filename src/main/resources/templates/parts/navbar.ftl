@@ -1,12 +1,12 @@
 <#include "security.ftl">
 <#import "login.ftl" as l>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-white pb-0">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <div class="collapse navbar-collapse border-bottom" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
                 <a class="nav-link" href="/main">
@@ -14,7 +14,7 @@
                 </a>
             </li>
             <li class="nav-item my-auto">
-                <a class="nav-link" href="/main">Услуги</a>
+                <a class="nav-link" href="/main">Задания</a>
             </li>
         <#if isAdmin>
             <li class="nav-item my-auto">

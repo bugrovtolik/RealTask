@@ -2,34 +2,36 @@ package com.abugrov.helpinghand.controller;
 
 import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.repos.TaskRepo;
+import com.abugrov.helpinghand.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Controller
 public class MainController {
-    private final TaskRepo taskRepo;
+    private final TaskService taskService;
 
     @Autowired
-    public MainController(TaskRepo taskRepo) {
-        this.taskRepo = taskRepo;
+    public MainController(TaskService taskService) {
+        this.taskService = taskService;
     }
 
     @GetMapping("/")
-    public String index() {
-        return "redirect:/main";
-    }
+    public String index() { return "redirect:/main"; }
 
     @GetMapping("/main")
     public String main(@RequestParam(required = false, defaultValue = "") String filter, Model model) {
-        Iterable<Task> tasks;
+        List<Task> tasks;
 
-        if (filter != null && !filter.isEmpty()) {
-            tasks = taskRepo.findByTitle(filter);
+        if (StringUtils.hasText(filter)) {
+            tasks = taskService.findByTitle(filter);
         } else {
-            tasks = taskRepo.findAll();
+            tasks = taskService.findAll();
         }
 
         model.addAttribute("tasks", tasks);

@@ -6,7 +6,7 @@
         <div class="form-group row">
             <label class="col-sm-2 col-form-label">Ваш Email на сайте</label>
             <div class="col-sm-6">
-                <input type="email" name="email" class="form-control" placeholder="Email" />
+                <input type="email" name="email" class="form-control" placeholder="Email" required/>
             </div>
         </div>
         <input type="hidden" name="_csrf" value="${_csrf.token}" />

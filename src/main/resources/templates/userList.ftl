@@ -19,6 +19,8 @@
         <td>
             <#if user.avatar??>
                 <img width="32px" height="32px" src="/img/${user.avatar}">
+            <#else>
+                <img width="32px" height="32px" src="/img/guest.png">
             </#if>
         </td>
         <td><#list user.roles as role>${role}<#sep>, </#list></td>

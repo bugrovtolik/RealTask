@@ -7,7 +7,7 @@
 <div class="alert alert-danger" role="alert">
     <#switch Session.SPRING_SECURITY_LAST_EXCEPTION.message>
         <#case "Bad credentials">
-            Неверный логин или пароль!
+            Неверный email или пароль!
             <#break>
         <#case "User is disabled">
             Сначала пройдите по ссылке в письме!

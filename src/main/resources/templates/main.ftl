@@ -10,15 +10,37 @@
     </div>
 </div>
 
-<a class="btn btn-primary" href="/task/create">Добавить услугу</a>
+<a class="btn btn-primary" href="/task/create">Добавить задание</a>
 <#if tasks??>
 <table class="table table-hover mt-3">
     <tbody>
-        <tr>
-        <#list tasks as task>
-            <td><a href="/task/${task.id}">${task.title}</a></td>
-        </#list>
-        </tr>
+    <#list tasks as task>
+    <tr>
+        <td>
+            <a href="/task/${task.id}" class="text-dark btn btn-block">
+                <div class="row">
+                    <div class="col-1">
+                        <#if task.authorAvatar??>
+                            <img width="50px" height="50px" src="/img/${task.authorAvatar}">
+                        <#else>
+                            <img width="50px" height="50px" src="/img/guest.png">
+                        </#if>
+                    </div>
+                    <div class="col-11">
+                        <div class="d-flex justify-content-between">
+                            <h5>${task.title}</h5>
+                            <b>${task.price} грн</b>
+                        </div>
+                        <div class="row">
+                            <div>${task.authorName}</div>
+                            <div class="ml-5 text-info">Выполнить до: ${task.execToFormatted}</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </td>
+    </tr>
+    </#list>
     </tbody>
 </table>
 <#else>

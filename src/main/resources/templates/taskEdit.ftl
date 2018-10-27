@@ -2,5 +2,5 @@
 <#import "parts/task.ftl" as t>
 
 <@c.page>
-    <@t.task "/task/create" true task/>
+    <@t.task "/task/${taskId}/edit" false task/>
 </@c.page>

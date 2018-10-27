@@ -56,14 +56,12 @@ public class RegistrationController {
             model.addAttribute("captchaError", "Вы забыли поставить галочку!");
         }
 
-        boolean isConfirmedEmpty = StringUtils.isEmpty(passwordConfirm);
-
-        if (isConfirmedEmpty) {
+        if (!StringUtils.hasText(passwordConfirm)) {
             model.addAttribute("password2Error", "Вы забыли подтвердить пароль!");
         } else if (user.getPassword() != null && !user.getPassword().equals(passwordConfirm)) {
             model.addAttribute("passwordError", "Пароли не совпадают!");
         }
-        if (isConfirmedEmpty || bindingResult.hasErrors() || !response.isSuccess()) {
+        if (!StringUtils.hasText(passwordConfirm) || bindingResult.hasErrors() || !response.isSuccess()) {
             Map<String, String> errors = ControllerUtility.getErrors(bindingResult);
 
             model.mergeAttributes(errors);
@@ -71,13 +69,8 @@ public class RegistrationController {
             return "registration";
         }
 
-        if (userService.findByEmail(user.getEmail()) != null) {
-            model.addAttribute("emailError", "Пользователь с таким email уже зарегистрирован!");
-            return "registration";
-        }
-
         if (!userService.addUser(user)) {
-            model.addAttribute("usernameError", "Такой пользователь уже зарегистрирован!");
+            model.addAttribute("emailError", "Пользователь с таким email уже зарегистрирован!");
             return "registration";
         }
 

@@ -6,7 +6,6 @@ import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -75,7 +74,24 @@ public class UserController {
             redirectAttrs.addFlashAttribute("avatarMessage", "Изображение профиля успешно изменено!");
             redirectAttrs.addFlashAttribute("messageType", "success");
         } else {
-            redirectAttrs.addFlashAttribute("avatarMessage", "Это файл не подходит!");
+            redirectAttrs.addFlashAttribute("avatarMessage", "Этот файл не подходит!");
+            redirectAttrs.addFlashAttribute("messageType", "danger");
+        }
+
+        return "redirect:/user/profile";
+    }
+
+    @PostMapping("updateUsername")
+    public String updateUsername(
+            @AuthenticationPrincipal User user,
+            @RequestParam String username,
+            RedirectAttributes redirectAttrs
+    ) {
+        if (userService.updateUsername(user, username)) {
+            redirectAttrs.addFlashAttribute("usernameMessage", "Имя и фамилия успешно изменены!");
+            redirectAttrs.addFlashAttribute("messageType", "success");
+        } else {
+            redirectAttrs.addFlashAttribute("usernameMessage", "Вы ничего не ввели!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
@@ -91,8 +107,7 @@ public class UserController {
             RedirectAttributes redirectAttrs
     ) {
         if (newpass.equals(newpass2)) {
-            if (userService.isActualPassword(user, oldpass)) {
-                userService.updatePassword(user, newpass);
+            if (userService.updatePassword(user, oldpass, newpass)) {
                 redirectAttrs.addFlashAttribute("passwordMessage", "Пароль успешно изменён!");
                 redirectAttrs.addFlashAttribute("messageType", "success");
             } else {
@@ -109,7 +124,7 @@ public class UserController {
 
     @GetMapping("recover/{code}")
     public String recoverCode(Model model, @PathVariable String code) {
-        UserDetails user = userService.findByActivationCode(code);
+        User user = userService.findByActivationCode(code);
 
         if (user == null) {
             model.addAttribute("messageType","danger");
@@ -131,10 +146,16 @@ public class UserController {
         User user = userService.findByUsername(username);
 
         if (newpass.equals(newpass2)) {
-            userService.updatePassword(user, newpass);
-            userService.cleanActivationCode(user);
-            model.addAttribute("message", "Пароль успешно изменён!");
-            model.addAttribute("messageType", "success");
+            if (userService.setNewPassword(user, newpass)) {
+                model.addAttribute("message", "Пароль успешно изменён!");
+                model.addAttribute("messageType", "success");
+            } else {
+                model.addAttribute("message", "Вы ничего не ввели!");
+                model.addAttribute("messageType", "danger");
+                model.addAttribute("username", user.getUsername());
+
+                return "recover";
+            }
         } else {
             model.addAttribute("message", "Пароли не совпадают!");
             model.addAttribute("messageType", "danger");
@@ -153,7 +174,10 @@ public class UserController {
 
     @PostMapping("lostPassword")
     public String sendNewPassword(Model model, @RequestParam String email) {
-        if (StringUtils.isEmpty(email)) {
+        if (!StringUtils.hasText(email)) {
+            model.addAttribute("messageType","danger");
+            model.addAttribute("message", " Вы ничего не ввели!");
+
             return "lostPassword";
         }
 

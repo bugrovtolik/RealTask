@@ -1,15 +1,12 @@
 package com.abugrov.helpinghand.domain;
 
 import org.hibernate.validator.constraints.Length;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Entity
 public class Task {
@@ -30,15 +27,15 @@ public class Task {
     @NotBlank
     private String lng;
     @Transient
-    SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy hh:mm");
+    @org.springframework.data.annotation.Transient
+    private DateTimeFormatter format =
+        DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm", new Locale("ru"));
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd.MM.yyyy hh:mm")
-    private Date execfrom;
+    @FutureOrPresent(message = "Эта дата уже прошла!")
+    private LocalDateTime execFrom;
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd.MM.yyyy hh:mm")
-    private Date execto;
+    @FutureOrPresent(message = "Эта дата уже прошла!")
+    private LocalDateTime execTo;
     @NotNull
     @PositiveOrZero
     private Integer price;
@@ -47,16 +44,21 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User author;
 
+    @AssertTrue(message = "Дата начала выполнения должна быть раньше даты завершения!")
+    private boolean isFromBeforeTo() {
+        return execFrom.isBefore(execTo);
+    }
+
     public Task() {}
 
-    public Task(String title, String description, String secret, String lat, String lng, String execfrom, String execto, Integer price, User author) throws ParseException {
+    public Task(String title, String description, String secret, String lat, String lng, String execFrom, String execTo, Integer price, User author) {
         this.title = title;
         this.description = description;
         this.secret = secret;
         this.lat = lat;
         this.lng = lng;
-        this.execfrom = format.parse(execfrom);
-        this.execto = format.parse(execto);
+        this.execFrom = LocalDateTime.parse(execFrom, format);
+        this.execTo = LocalDateTime.parse(execTo, format);
         this.price = price;
         this.author = author;
     }
@@ -93,6 +95,14 @@ public class Task {
         return author.getUsername();
     }
 
+    public Long getAuthorId() {
+        return author.getId();
+    }
+
+    public String getAuthorAvatar() {
+        return author.getAvatar();
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -121,20 +131,28 @@ public class Task {
         this.lng = lng;
     }
 
-    public Date getExecfrom() {
-        return execfrom;
+    public String getExecFromFormatted() {
+        return execFrom.format(format);
     }
 
-    public void setExecfrom(String execfrom) throws ParseException {
-        this.execfrom = format.parse(execfrom);
+    public void setExecFrom(String execFrom) {
+        this.execFrom = LocalDateTime.parse(execFrom, format);
     }
 
-    public Date getExecto() {
-        return execto;
+    public String getExecToFormatted() {
+        return execTo.format(format);
     }
 
-    public void setExecto(String execto) throws ParseException {
-        this.execto = format.parse(execto);
+    public void setExecTo(String execTo) {
+        this.execTo = LocalDateTime.parse(execTo, format);
+    }
+
+    public LocalDateTime getExecFrom() {
+        return execFrom;
+    }
+
+    public LocalDateTime getExecTo() {
+        return execTo;
     }
 
     public Integer getPrice() {

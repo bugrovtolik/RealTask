@@ -38,8 +38,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepo.findByEmail(email);
 
         if (user == null) {
             throw new UsernameNotFoundException("Пользователь не найден!");
@@ -49,7 +49,7 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean addUser(User user) {
-        User userFromDb = userRepo.findByUsername(user.getUsername());
+        User userFromDb = userRepo.findByEmail(user.getEmail());
 
         if (userFromDb != null) {
             return false;
@@ -132,7 +132,7 @@ public class UserService implements UserDetailsService {
     }
 
     private void sendMessage(User user, String topic, String message) {
-        if (!StringUtils.isEmpty(user.getEmail())) {
+        if (StringUtils.hasText(user.getEmail())) {
             mailSender.send(user.getEmail(), topic, message);
         }
     }
@@ -151,18 +151,27 @@ public class UserService implements UserDetailsService {
         sendMessage(user,"Восстановление пароля на Helping Hand", message);
     }
 
-    public void updatePassword(User user, String newpass) {
-        user.setPassword(passwordEncoder.encode(newpass));
-        userRepo.save(user);
+    public boolean updatePassword(User user, String oldpass, String newpass) {
+        if (StringUtils.hasText(newpass) && passwordEncoder.matches(oldpass, user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(newpass));
+            userRepo.save(user);
+
+            return true;
+        }
+
+        return false;
     }
 
-    public boolean isActualPassword(User user, String oldpass) {
-        return passwordEncoder.matches(oldpass, user.getPassword());
-    }
+    public boolean setNewPassword(User user, String newpass) {
+        if (StringUtils.hasText(newpass)) {
+            user.setActivationCode(null);
+            user.setPassword(passwordEncoder.encode(newpass));
+            userRepo.save(user);
 
-    public void cleanActivationCode(User user) {
-        user.setActivationCode(null);
-        userRepo.save(user);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean updateAvatar(User user, MultipartFile file) throws IOException {
@@ -181,11 +190,24 @@ public class UserService implements UserDetailsService {
             new File(uploadPath + "/" + user.getAvatar()).delete();
 
             user.setAvatar(resultFilename);
+
+            userRepo.save(user);
         } else {
             return false;
         }
 
         userRepo.save(user);
         return true;
+    }
+
+    public boolean updateUsername(User user, String username) {
+        if (StringUtils.hasText(username)) {
+            user.setUsername(username);
+            userRepo.save(user);
+
+            return true;
+        }
+        
+        return false;
     }
 }

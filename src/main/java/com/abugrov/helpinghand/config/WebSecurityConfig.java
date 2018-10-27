@@ -28,14 +28,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/",
                         "/registration",
                         "/activate/*",
-                        "/user/forgotPassword",
+                        "/user/lostPassword",
                         "/user/recover/**",
-                        "/img/**"
+                        "/img/**",
+                        "/main"
                 ).permitAll()
                 .anyRequest().authenticated()
             .and()
                 .formLogin()
                 .loginPage("/login")
+                .usernameParameter("email")
                 .permitAll()
             .and()
                 .logout()

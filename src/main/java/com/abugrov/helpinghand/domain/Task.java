@@ -5,8 +5,6 @@ import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 @Entity
 public class Task {
@@ -17,25 +15,28 @@ public class Task {
     @NotBlank
     @Length(max = 255, message = "Заголовок слишком длинный (более 255 символов)")
     private String title;
+
     @NotBlank
     @Length(max = 2000, message = "Описание слишком длинное (более 2000 символов)")
     private String description;
+
     @Length(max = 500, message = "Постарайтесь уложиться в 500 символов!")
     private String secret;
+
     @NotBlank
     private String lat;
+
     @NotBlank
     private String lng;
-    @Transient
-    @org.springframework.data.annotation.Transient
-    private DateTimeFormatter format =
-        DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm", new Locale("ru"));
+
     @NotNull
     @FutureOrPresent(message = "Эта дата уже прошла!")
     private LocalDateTime execFrom;
+
     @NotNull
     @FutureOrPresent(message = "Эта дата уже прошла!")
     private LocalDateTime execTo;
+
     @NotNull
     @PositiveOrZero
     private Integer price;
@@ -44,9 +45,13 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User author;
 
+    //if called before field assignment, may throw NPE (need to be fixed)
     @AssertTrue(message = "Дата начала выполнения должна быть раньше даты завершения!")
     private boolean isFromBeforeTo() {
-        return execFrom.isBefore(execTo);
+        if (execFrom != null && execTo != null) {
+            return execFrom.isBefore(execTo);
+        }
+        return false;
     }
 
     public Task() {}
@@ -57,8 +62,8 @@ public class Task {
         this.secret = secret;
         this.lat = lat;
         this.lng = lng;
-        this.execFrom = LocalDateTime.parse(execFrom, format);
-        this.execTo = LocalDateTime.parse(execTo, format);
+        this.execFrom = DomainUtility.toDate(execFrom);
+        this.execTo = DomainUtility.toDate(execTo);
         this.price = price;
         this.author = author;
     }
@@ -132,19 +137,19 @@ public class Task {
     }
 
     public String getExecFromFormatted() {
-        return execFrom.format(format);
+        return DomainUtility.toString(execFrom);
     }
 
     public void setExecFrom(String execFrom) {
-        this.execFrom = LocalDateTime.parse(execFrom, format);
+        this.execFrom = DomainUtility.toDate(execFrom);
     }
 
     public String getExecToFormatted() {
-        return execTo.format(format);
+        return DomainUtility.toString(execTo);
     }
 
     public void setExecTo(String execTo) {
-        this.execTo = LocalDateTime.parse(execTo, format);
+        this.execTo = DomainUtility.toDate(execTo);
     }
 
     public LocalDateTime getExecFrom() {

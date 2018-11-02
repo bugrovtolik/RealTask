@@ -87,13 +87,16 @@
     <div class="row">
         <div class="col">
             <div class="mb-2">Местоположение задания:</div>
-            <div id="map" style="width: 100%; height: 95%"></div>
+            <div id="map" class="w-100 h-75"></div>
+            <div class="form-group my-3">
+                <button type="submit" class="btn btn-primary"><#if create>Опубликовать<#else>Сохранить</#if></button>
+            </div>
         </div>
 
         <div class="col">
             <div class="form-group">
                 <label>Конфиденциальные данные: (не обязательно):</label>
-                <textarea class="form-control${(secretError??)?string(' is-invalid', '')}" rows="7" name="secret" placeholder="Эта информация будет доступна только выбранному исполнителю. Укажите здесь Ваш номер телефона, номер подъезда и квартиры, дополнительные контакты и пр."><#if task != 'null'>${task.secret}</#if></textarea>
+                <textarea class="form-control${(secretError??)?string(' is-invalid', '')}" rows="5" name="secret" placeholder="Эта информация будет доступна только выбранному исполнителю. Укажите здесь Ваш номер телефона, номер подъезда и квартиры, дополнительные контакты и пр."><#if task != 'null'>${task.secret}</#if></textarea>
             <#if secretError??>
                 <div class="invalid-feedback">
                     ${secretError}
@@ -126,7 +129,7 @@
                        placeholder="До"<#if create> required</#if>/>
             </div>
 
-            <div class="form-inline">
+            <div class="form-inline mb-2">
                 <label>Оплата работы:</label>
                 <input type="number" name="price" value="<#if task != 'null'>${task.price}</#if>" class="form-control mx-2" min="0" placeholder="Цена"<#if create> required</#if>/>грн
             </div>
@@ -136,9 +139,5 @@
     <input type="hidden" name="lat" id="lat">
     <input type="hidden" name="lng" id="lng">
     <input type="hidden" name="_csrf" value="${_csrf.token}" />
-
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary mt-3"><#if create>Опубликовать<#else>Сохранить</#if></button>
-    </div>
 </form>
 </#macro>

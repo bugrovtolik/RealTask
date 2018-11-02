@@ -4,6 +4,10 @@ import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.repos.TaskRepo;
 import com.abugrov.helpinghand.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -25,16 +29,21 @@ public class MainController {
     public String index() { return "redirect:/main"; }
 
     @GetMapping("/main")
-    public String main(@RequestParam(required = false, defaultValue = "") String filter, Model model) {
-        List<Task> tasks;
+    public String main(
+            @RequestParam(required = false, defaultValue = "") String filter,
+            Model model,
+            @PageableDefault(sort = { "id" }, direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<Task> pages;
 
         if (StringUtils.hasText(filter)) {
-            tasks = taskService.findByTitle(filter);
+            pages = taskService.findByTitle(filter, pageable);
         } else {
-            tasks = taskService.findAll();
+            pages = taskService.findAll(pageable);
         }
 
-        model.addAttribute("tasks", tasks);
+        model.addAttribute("pages", pages);
+        model.addAttribute("url", "/main");
         model.addAttribute("filter", filter);
 
         return "main";

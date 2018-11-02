@@ -3,6 +3,8 @@ package com.abugrov.helpinghand.service;
 import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.repos.TaskRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,12 +22,12 @@ public class TaskService {
         taskRepo.save(task);
     }
 
-    public List<Task> findAll() {
-        return taskRepo.findAll();
+    public Page<Task> findAll(Pageable pageable) {
+        return taskRepo.findAll(pageable);
     }
 
-    public List<Task> findByTitle(String filter) {
-        return taskRepo.findByTitle(filter);
+    public Page<Task> findByTitle(String filter, Pageable pageable) {
+        return taskRepo.findByTitle(filter, pageable);
     }
 
     public void deleteTask(Task task) { taskRepo.delete(task); }

@@ -30,8 +30,8 @@ create table usr (
     primary key (id)
 );
 
-alter table if exists service
-    add constraint service_user_fk
+alter table if exists task
+    add constraint task_user_fk
     foreign key (user_id) references usr;
 
 alter table if exists user_role

@@ -1,4 +1,5 @@
 <#import "parts/common.ftl" as c>
+<#import "parts/pager.ftl" as p>
 
 <@c.page>
 <div class="form-row">
@@ -9,12 +10,14 @@
         </form>
     </div>
 </div>
-
-<a class="btn btn-primary" href="/task/create">Добавить задание</a>
-<#if tasks??>
+<div class="d-flex justify-content-between">
+    <a class="btn btn-primary" href="/task/create">Добавить задание</a>
+<#if pages.content??>
+    <@p.pager url pages>
+</div>
 <table class="table table-hover mt-3">
     <tbody>
-    <#list tasks as task>
+    <#list pages.content as task>
     <tr>
         <td>
             <a href="/task/${task.id}" class="text-dark btn btn-block">
@@ -33,7 +36,7 @@
                         </div>
                         <div class="row">
                             <div>${task.authorName}</div>
-                            <div class="ml-5 text-info">Выполнить до: ${task.execToFormatted}</div>
+                            <div class="ml-auto text-info">Выполнить до: ${task.execToFormatted}</div>
                         </div>
                     </div>
                 </div>
@@ -43,6 +46,7 @@
     </#list>
     </tbody>
 </table>
+</@p.pager>
 <#else>
     Пусто!
 </#if>

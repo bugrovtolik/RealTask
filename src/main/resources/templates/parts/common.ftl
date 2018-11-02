@@ -24,7 +24,7 @@
 <body class="bg-light">
 <#include "navbar.ftl">
 
-<div class="container pt-5 bg-white">
+<div class="container pt-5 pb-2 bg-white">
     <#nested>
 </div>
 

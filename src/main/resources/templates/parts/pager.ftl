@@ -11,8 +11,10 @@
 
         body = head + bodyBefore + (pageNumber > 3 && pageNumber < totalPages - 2)?then([pageNumber], []) + bodyAfter + tail
         >
-    <#else>
+    <#elseif page.getTotalPages() gt 1>
         <#assign body = 1..page.getTotalPages()>
+    <#else>
+        <#assign body = [1]>
     </#if>
     <ul class="pagination mb-0">
         <li class="page-item disabled">

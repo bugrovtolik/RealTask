@@ -5,7 +5,10 @@ import com.abugrov.helpinghand.domain.User;
 import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -50,8 +53,10 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             @RequestParam Map<String, String> form,
             @RequestParam("userId") User user
-    ) throws IOException {
+    ) throws Exception {
         userService.saveUser(user, username, form, file);
+        Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return "redirect:/user";
     }
@@ -59,7 +64,6 @@ public class UserController {
     @GetMapping("profile")
     public String getProfile(Model model, @AuthenticationPrincipal User user) {
         model.addAttribute("username", user.getUsername());
-        model.addAttribute("email", user.getEmail());
 
         return "profile";
     }
@@ -69,10 +73,13 @@ public class UserController {
             @AuthenticationPrincipal User user,
             @RequestParam("file") MultipartFile file,
             RedirectAttributes redirectAttrs
-    ) throws IOException {
+    ) throws Exception {
         if (userService.updateAvatar(user, file)) {
             redirectAttrs.addFlashAttribute("avatarMessage", "Изображение профиля успешно изменено!");
             redirectAttrs.addFlashAttribute("messageType", "success");
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("avatarMessage", "Этот файл не подходит!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
@@ -90,6 +97,9 @@ public class UserController {
         if (userService.updateUsername(user, username)) {
             redirectAttrs.addFlashAttribute("usernameMessage", "Имя и фамилия успешно изменены!");
             redirectAttrs.addFlashAttribute("messageType", "success");
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("usernameMessage", "Вы ничего не ввели!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
@@ -110,6 +120,9 @@ public class UserController {
             if (userService.updatePassword(user, oldpass, newpass)) {
                 redirectAttrs.addFlashAttribute("passwordMessage", "Пароль успешно изменён!");
                 redirectAttrs.addFlashAttribute("messageType", "success");
+
+                Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
                 redirectAttrs.addFlashAttribute("passwordMessage","Текущий пароль введён неверно!");
                 redirectAttrs.addFlashAttribute("messageType", "danger");

@@ -45,7 +45,6 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User author;
 
-    //if called before field assignment, may throw NPE (need to be fixed)
     @AssertTrue(message = "Дата начала выполнения должна быть раньше даты завершения!")
     private boolean isFromBeforeTo() {
         if (execFrom != null && execTo != null) {

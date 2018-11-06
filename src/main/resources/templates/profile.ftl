@@ -56,11 +56,16 @@
         </div>
     </#if>
     <form method="post" action="/user/updateAvatar" enctype="multipart/form-data">
-        <div class="form-group">
+        <div class="form-group mt-2">
             <div class="custom-file">
-                <input type="file" name="file" id="customFile" required>
-                <label class="custom-file-label" for="customFile">Выберите файл</label>
+                <input type="file" class="custom-file-input" id="avatar" name="file"/>
+                <label class="custom-file-label text-truncate" for="avatar">Выберите файл</label>
             </div>
+            <script>
+                $('#avatar').on('change',function() {
+                    $(this).next('.custom-file-label').html($(this).val().split('\\').pop());
+                })
+            </script>
         </div>
         <input type="hidden" name="_csrf" value="${_csrf.token}" />
         <button class="btn btn-primary" type="submit">Сохранить</button>

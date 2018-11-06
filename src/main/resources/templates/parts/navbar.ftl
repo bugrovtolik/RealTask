@@ -27,15 +27,15 @@
             <#if user??>
                 <a class="nav-link" href="/user/profile">
                     <#if user.avatar??>
-                        <img width="50px" height="50px" src="/img/${user.avatar}">
+                        <img src="/img/${user.avatar}">
                     <#else>
-                        <img width="50px" height="50px" src="/img/guest.png">
+                        <img src="/img/guest.png">
                     </#if>
                     ${name}
                 </a>
             <#else>
                 <a class="nav-link" href="/login">
-                    <img width="50px" height="50px" src="/img/guest.png">
+                    <img src="/img/guest.png">
                     ${name}
                 </a>
             </#if>

@@ -1,5 +1,7 @@
 package com.abugrov.helpinghand.config;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +14,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class MvcConfig implements WebMvcConfigurer {
     @Value("${upload.path}")
     private String uploadPath;
+    @Value("${cloudinary.cloud_name}")
+    private String cloud_name;
+    @Value("${cloudinary.api_key}")
+    private String api_key;
+    @Value("${cloudinary.api_secret}")
+    private String api_secret;
 
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public Cloudinary getCloudinary() {
+        return new Cloudinary("cloudinary://" + api_key + ":" + api_secret + "@" + cloud_name);
     }
 
     public void addViewControllers(ViewControllerRegistry registry) {
@@ -25,6 +38,6 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/img/**")
-                .addResourceLocations("file:///" + uploadPath + "/");
+                .addResourceLocations(uploadPath);
     }
 }

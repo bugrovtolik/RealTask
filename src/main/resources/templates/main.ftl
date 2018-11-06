@@ -24,9 +24,9 @@
                 <div class="row">
                     <div class="col-1">
                         <#if task.authorAvatar??>
-                            <img width="50px" height="50px" src="/img/${task.authorAvatar}">
+                            <img src="/img/${task.authorAvatar}">
                         <#else>
-                            <img width="50px" height="50px" src="/img/guest.png">
+                            <img src="/img/guest.png">
                         </#if>
                     </div>
                     <div class="col-11">

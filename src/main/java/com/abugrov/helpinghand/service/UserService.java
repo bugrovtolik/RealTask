@@ -3,6 +3,9 @@ package com.abugrov.helpinghand.service;
 import com.abugrov.helpinghand.domain.Role;
 import com.abugrov.helpinghand.domain.User;
 import com.abugrov.helpinghand.repos.UserRepo;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,12 +29,14 @@ public class UserService implements UserDetailsService {
 
     private final UserRepo userRepo;
     private final MailSender mailSender;
+    private final Cloudinary cloudinary;
     public final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepo userRepo, MailSender mailSender, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepo userRepo, MailSender mailSender, Cloudinary cloudinary, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.mailSender = mailSender;
+        this.cloudinary = cloudinary;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -110,7 +113,7 @@ public class UserService implements UserDetailsService {
                          String username,
                          Map<String, String> form,
                          MultipartFile file
-    ) throws IOException {
+    ) throws Exception {
 
         user.setUsername(username);
 
@@ -174,30 +177,26 @@ public class UserService implements UserDetailsService {
         return false;
     }
 
-    public boolean updateAvatar(User user, MultipartFile file) throws IOException {
-        if (file != null && !file.getOriginalFilename().isEmpty()) {
-            File uploadDir = new File(uploadPath);
+    public boolean updateAvatar(User user, MultipartFile multipartFile) throws Exception {
+        if (multipartFile != null && !multipartFile.getOriginalFilename().isEmpty()) {
 
-            if (!uploadDir.exists()) {
-                uploadDir.mkdir();
+            if (user.getAvatar() != null) {
+                cloudinary.api().deleteResources(Collections.singleton(user.getAvatar()), null);
             }
 
-            String uuidFile = UUID.randomUUID().toString();
-            String resultFilename = uuidFile + "." + file.getOriginalFilename();
+            user.setAvatar(UUID.randomUUID().toString());
 
-            file.transferTo(new File(uploadPath + "/" + resultFilename));
-
-            new File(uploadPath + "/" + user.getAvatar()).delete();
-
-            user.setAvatar(resultFilename);
+            Map result = cloudinary.uploader().upload(multipartFile.getBytes(), ObjectUtils.asMap(
+                "public_id", user.getAvatar(),
+                "transformation", new Transformation().crop("limit").width(50).height(50)
+            ));
 
             userRepo.save(user);
-        } else {
-            return false;
+
+            return true;
         }
 
-        userRepo.save(user);
-        return true;
+        return false;
     }
 
     public boolean updateUsername(User user, String username) {

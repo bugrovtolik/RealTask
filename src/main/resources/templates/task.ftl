@@ -51,9 +51,9 @@
     <div class="m-3">
         <div class="row m-3">
             <#if task.authorAvatar??>
-                <img width="50px" height="50px" src="/img/${task.authorAvatar}">
+                <img src="/img/${task.authorAvatar}">
             <#else>
-                <img width="50px" height="50px" src="/img/guest.png">
+                <img src="/img/guest.png">
             </#if>
             <h3 class="m-2">${task.authorName}</h3>
         </div>

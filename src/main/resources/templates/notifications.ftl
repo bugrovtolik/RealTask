@@ -2,9 +2,9 @@
 <#import "parts/pager.ftl" as p>
 
 <@c.page>
+    <div class="card mb-2">
+        <div class="card-header">
     <#list contracts as contract>
-        <div class="card mb-2">
-            <div class="card-header">
     <#if contract.isAccepted()??>
         <#if contract.isAccepted()>
             <#if !contract.isCompleted()??>

@@ -14,7 +14,16 @@
                 </a>
             </li>
             <li class="nav-item my-auto">
-                <a class="nav-link" href="/main">Задания</a>
+                <a class="nav-link" href="/main">Все задания</a>
+            </li>
+            <li class="nav-item my-auto">
+                <a class="nav-link" href="/archive">Архив</a>
+            </li>
+            <li class="nav-item my-auto">
+                <a class="nav-link" href="/mytasks/">Мои задания</a>
+            </li>
+            <li class="nav-item my-auto">
+                <a class="nav-link" href="/notifications">Уведомления</a>
             </li>
         <#if isAdmin>
             <li class="nav-item my-auto">

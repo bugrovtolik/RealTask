@@ -1,3 +1,5 @@
+set time zone 'Europe/Kiev';
+
 create sequence hibernate_sequence start 2 increment 1;
 
 create table task (
@@ -11,6 +13,7 @@ create table task (
     lat varchar(255) not null,
     lng varchar(255) not null,
     user_id int8 not null,
+    active boolean not null,
     primary key (id)
 );
 

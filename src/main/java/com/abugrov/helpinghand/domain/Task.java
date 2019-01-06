@@ -41,6 +41,9 @@ public class Task {
     @PositiveOrZero
     private Integer price;
 
+    @NotNull
+    private boolean active;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User author;
@@ -165,5 +168,13 @@ public class Task {
 
     public void setPrice(Integer price) {
         this.price = price;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -1,7 +1,9 @@
 package com.abugrov.helpinghand.controller;
 
+import com.abugrov.helpinghand.domain.Contract;
 import com.abugrov.helpinghand.domain.Role;
 import com.abugrov.helpinghand.domain.User;
+import com.abugrov.helpinghand.service.ContractService;
 import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -24,7 +27,6 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
 
-    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }

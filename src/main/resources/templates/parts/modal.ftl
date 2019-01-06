@@ -30,13 +30,14 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             </div>
             <div class="modal-body">
-                <form action="/task/${task.id}/execute" method="post">
+                <form action="/contract/create" method="post">
                     <div class="form-group">
-                        <textarea class="form-control" rows="5" name="text" placeholder="Напишите комментарий, его увидит только автор задания"></textarea>
+                        <textarea class="form-control" rows="5" name="text" placeholder="Готов(а) выполнить задание!"></textarea>
                     </div>
                     <input type="hidden" name="_csrf" value="${_csrf.token}" />
+                    <input type="hidden" name="taskId" value="${task.id}" />
                     <div class="btn-toolbar">
-                        <button class="btn btn-light  mr-auto" data-dismiss="modal" aria-hidden="true">Нет</button>
+                        <button class="btn btn-light  mr-auto" data-dismiss="modal" aria-hidden="true">Отмена</button>
                         <button type="submit" class="btn btn-outline-dark">Отправить</button>
                     </div>
                 </form>

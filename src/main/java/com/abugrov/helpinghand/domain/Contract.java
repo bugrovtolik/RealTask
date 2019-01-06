@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-public class Comment {
+public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -20,22 +20,26 @@ public class Comment {
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
-    private User author;
+    private User user;
 
     @NotNull
-    private LocalDateTime posted;
+    private LocalDateTime time;
 
     @Length(max = 255, message = "Комментарий слишком длинный (более 255 символов)")
     private String text;
 
-    public Comment(Task task, User author, LocalDateTime posted, String text) {
+    private Boolean accepted;
+
+    private Boolean completed;
+
+    public Contract(Task task, User user, LocalDateTime time, String text) {
         this.task = task;
-        this.author = author;
-        this.posted = posted;
+        this.user = user;
+        this.time = time;
         this.text = text;
     }
 
-    public Comment() {}
+    public Contract() {}
 
     public Long getId() {
         return id;
@@ -53,28 +57,28 @@ public class Comment {
         this.task = task;
     }
 
-    public User getAuthor() {
-        return author;
+    public User getUser() {
+        return user;
     }
 
-    public String getAuthorName() { return author.getUsername(); }
+    public String getUserName() { return user.getUsername(); }
 
-    public String getAuthorAvatar() { return author.getAvatar(); }
+    public String getUserAvatar() { return user.getAvatar(); }
 
-    public void setAuthor(User author) {
-        this.author = author;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public String getPostedFormatted() {
-        return DomainUtility.toString(posted);
+    public String getTimeFormatted() {
+        return DomainUtility.toString(time);
     }
 
-    public LocalDateTime getPosted() {
-        return posted;
+    public LocalDateTime getTime() {
+        return time;
     }
 
-    public void setPosted(LocalDateTime posted) {
-        this.posted = posted;
+    public void setTime(LocalDateTime time) {
+        this.time = time;
     }
 
     public String getText() {
@@ -83,5 +87,21 @@ public class Comment {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public Boolean isAccepted() {
+        return accepted;
+    }
+
+    public void setAccepted(Boolean accepted) {
+        this.accepted = accepted;
+    }
+
+    public Boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
     }
 }

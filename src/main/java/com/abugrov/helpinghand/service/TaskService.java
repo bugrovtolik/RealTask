@@ -1,6 +1,7 @@
 package com.abugrov.helpinghand.service;
 
 import com.abugrov.helpinghand.domain.Task;
+import com.abugrov.helpinghand.domain.User;
 import com.abugrov.helpinghand.repos.TaskRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,12 +23,28 @@ public class TaskService {
         taskRepo.save(task);
     }
 
-    public Page<Task> findAll(Pageable pageable) {
-        return taskRepo.findAll(pageable);
+    private void checkExpired() {
+        taskRepo.checkExpired();
     }
 
-    public Page<Task> findByTitle(String filter, Pageable pageable) {
-        return taskRepo.findByTitle(filter, pageable);
+    public Page<Task> findAllActive(Pageable pageable) {
+        checkExpired();
+        return taskRepo.findByActive(true, pageable);
+    }
+
+    public Page<Task> findByAuthorActive(User author, Pageable pageable) {
+        checkExpired();
+        return taskRepo.findByAuthorAndActive(author, true, pageable);
+    }
+
+    public Page<Task> findAllNotActive(Pageable pageable) {
+        checkExpired();
+        return taskRepo.findByActive(false, pageable);
+    }
+
+    public Page<Task> findByTitleActive(String filter, Pageable pageable) {
+        checkExpired();
+        return taskRepo.findByTitleAndActive(filter, true, pageable);
     }
 
     public void deleteTask(Task task) { taskRepo.delete(task); }
@@ -43,5 +60,10 @@ public class TaskService {
         oldTask.setPrice(newTask.getPrice());
 
         taskRepo.save(oldTask);
+    }
+
+    public void deactivate(Task task) {
+        task.setActive(false);
+        taskRepo.save(task);
     }
 }

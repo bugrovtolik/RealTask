@@ -90,7 +90,7 @@ public class MainController {
             @AuthenticationPrincipal User user,
             @PageableDefault(sort = { "id" }, direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<Task> pages = taskService.findByAuthorActive(user, pageable);
+        Page<Task> pages = taskService.findByAuthor(user, pageable);
 
         model.addAttribute("pages", pages);
         model.addAttribute("url", "/mytasks");

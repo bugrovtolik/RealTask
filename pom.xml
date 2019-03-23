@@ -14,7 +14,20 @@
         <version>2.0.5.RELEASE</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>bintray-stokito-maven</id>
+            <name>stokito-maven</name>
+            <url>https://dl.bintray.com/stokito/maven</url>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>com.liqpay</groupId>
+            <artifactId>liqpay-sdk</artifactId>
+            <version>0.6</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

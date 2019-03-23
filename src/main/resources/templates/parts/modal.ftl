@@ -11,7 +11,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-light mr-auto" data-dismiss="modal" aria-hidden="true">Нет</button>
-                <form action="/task/${task.id}/delete" method="post">
+                <form action="/task/${task.id!}/delete" method="post">
                     <input type="hidden" name="_csrf" value="${_csrf.token}" />
                     <button type="submit" class="btn btn-outline-dark">Удалить</button>
                 </form>

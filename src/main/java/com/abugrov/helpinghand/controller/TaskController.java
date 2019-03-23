@@ -1,10 +1,14 @@
 package com.abugrov.helpinghand.controller;
 
+import com.abugrov.helpinghand.config.PaymentConfig;
 import com.abugrov.helpinghand.domain.Contract;
 import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.domain.User;
+import com.abugrov.helpinghand.domain.dto.PaymentResponseDto;
 import com.abugrov.helpinghand.service.ContractService;
 import com.abugrov.helpinghand.service.TaskService;
+import com.liqpay.LiqPay;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,17 +20,20 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Controller
 @RequestMapping("/task")
 public class TaskController {
+    private final PaymentConfig paymentConfig;
     private final TaskService taskService;
     private final ContractService contractService;
 
     @Autowired
-    public TaskController(TaskService taskService, ContractService contractService) {
+    public TaskController(PaymentConfig paymentConfig, TaskService taskService, ContractService contractService) {
+        this.paymentConfig = paymentConfig;
         this.taskService = taskService;
         this.contractService = contractService;
     }
@@ -51,11 +58,28 @@ public class TaskController {
         }
 
         task.setAuthor(user);
-        task.setActive(true);
 
         taskService.saveTask(task);
 
         return "redirect:/main";
+    }
+
+    @PostMapping("/{taskId}/paid")
+    public String getPaid(@RequestParam("data") String data,
+                          @RequestParam("signature") String signature,
+                          @PathVariable("taskId") Task task) throws Exception {
+        if (!paymentConfig.isValidSignature(data, signature)) {
+            PaymentResponseDto resp = paymentConfig.read(data);
+
+            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
+                if (resp.getStatus() == PaymentResponseDto.Status.sandbox) {
+                    task.setPaid(true);
+                    taskService.saveTask(task);
+                }
+            }
+        }
+
+        return "redirect:/" + task.getId();
     }
 
     @PreAuthorize("hasAuthority('ADMIN') OR #user.id == #task.authorId")
@@ -105,7 +129,7 @@ public class TaskController {
     @GetMapping("/{taskId}")
     public String view(@AuthenticationPrincipal User user,
                        @PathVariable("taskId") Task task,
-                       Model model) {
+                       Model model) throws Exception {
         if (task.isActive()) {
             List<Contract> contracts;
             Contract accepted = contractService.findByTaskAndAccepted(task);
@@ -125,6 +149,13 @@ public class TaskController {
             if (accepted != null && (user.isAdmin() || user.getId().equals(accepted.getUser().getId()))) {
                 model.addAttribute("secret", true);
             }
+        } else if (!task.isPaid()) {
+            String status = paymentConfig.getStatus(task.getAuthorId().toString(), task.getId().toString());
+            System.out.println(status);
+            String href = paymentConfig.getHref(user.getId().toString(), task.getId().toString(),
+                    "test", task.getTitle());
+
+            model.addAttribute("payment", href);
         } else {
             Contract completed = contractService.findByTaskAndCompleted(task);
             if (completed != null) {

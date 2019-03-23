@@ -44,6 +44,9 @@ public class Task {
     @NotNull
     private boolean active;
 
+    @NotNull
+    private boolean paid;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User author;
@@ -176,5 +179,13 @@ public class Task {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
     }
 }

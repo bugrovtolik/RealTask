@@ -32,11 +32,6 @@ public class TaskService {
         return taskRepo.findByActive(true, pageable);
     }
 
-    public Page<Task> findByAuthorActive(User author, Pageable pageable) {
-        checkExpired();
-        return taskRepo.findByAuthorAndActive(author, true, pageable);
-    }
-
     public Page<Task> findAllNotActive(Pageable pageable) {
         checkExpired();
         return taskRepo.findByActive(false, pageable);
@@ -65,5 +60,10 @@ public class TaskService {
     public void deactivate(Task task) {
         task.setActive(false);
         taskRepo.save(task);
+    }
+
+    public Page<Task> findByAuthor(User author, Pageable pageable) {
+        checkExpired();
+        return taskRepo.findByAuthor(author, pageable);
     }
 }

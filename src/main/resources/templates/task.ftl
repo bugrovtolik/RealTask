@@ -95,7 +95,7 @@
     </#list>
     </#if>
     </div>
-    <div class="m-3">
+    <div class="col m-3">
         <div class="row m-3">
             <#if task.authorAvatar??>
                 <img src="/img/${task.authorAvatar}">
@@ -108,6 +108,8 @@
     <#if !task.isActive()>
         <#if completed??>
             <p><i class="far fa-calendar-check mr-1"></i>Выполнено: ${completed.timeFormatted}</p>
+        <#elseif !task.isPaid()>
+            <p><i class="fas fa-donate mr-1"></i>Задание не было оплачено. Задание станет активным сразу после оплаты.</p>
         <#else>
             <p><i class="far fa-calendar-minus mr-1"></i>Задание не было выполнено</p>
         </#if>
@@ -130,6 +132,9 @@
             <#elseif allowExec??>
                 <div><a href="#confirmExecuteModal" data-toggle="modal" class="btn btn-outline-success mt-3 btn-block">Готов выполнить</a></div>
             </#if>
+        <#elseif !task.isPaid()>
+            <div><a target="_blank" href="${payment}" class="btn btn-outline-success mt-3 btn-block">Оплатить ${task.price} грн</a></div>
+            <div><a href="#confirmDeleteModal" data-toggle="modal" class="btn btn-outline-danger mt-3 btn-block">Удалить</a></div>
         </#if>
     </div>
 </div>

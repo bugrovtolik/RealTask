@@ -22,5 +22,5 @@ public interface TaskRepo extends JpaRepository<Task, Long> {
     @Query("update Task set active = false where current_timestamp >= exec_to")
     void checkExpired();
 
-    Page<Task> findByAuthorAndActive(User author, boolean b, Pageable pageable);
+    Page<Task> findByAuthor(User author, Pageable pageable);
 }

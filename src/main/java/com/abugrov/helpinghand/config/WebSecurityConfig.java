@@ -33,7 +33,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     "/user/lostPassword",
                     "/user/recover/**",
                     "/img/**",
-                    "/main"
+                    "/main",
+                    "/task/callback"
                 ).permitAll()
                 .anyRequest().authenticated()
             .and()

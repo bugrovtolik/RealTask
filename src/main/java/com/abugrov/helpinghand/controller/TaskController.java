@@ -65,23 +65,23 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @PostMapping("/callback")
+    @PostMapping("{taskId}/callback")
     public void callback(
-            @RequestParam String data,
-            @RequestParam String signature
+            @RequestParam("data") String data,
+            @RequestParam("signature") String signature,
+            @PathVariable("taskId") Task task
     ) throws IOException {
-        System.out.println("inside");
-        System.out.println(data);
-        System.out.println(signature);
-        if (!paymentConfig.isValidSignature(data, signature)) {
+        if (paymentConfig.isValidSignature(data, signature)) {
             PaymentResponseDto resp = paymentConfig.read(data);
-            System.out.println("valid");
-//            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
-//                if (resp.getStatus() == PaymentResponseDto.Status.sandbox) {
-//                    task.setPaid(true);
-//                    taskService.saveTask(task);
-//                }
-//            }
+            System.out.println(resp.getStatus());
+            System.out.println(resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId()));
+            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
+                if (resp.getStatus() == PaymentResponseDto.Status.sandbox) {
+                    task.setPaid(true);
+                    task.setActive(true);
+                    taskService.saveTask(task);
+                }
+            }
         }
     }
 
@@ -157,15 +157,7 @@ public class TaskController {
                 model.addAttribute("secret", true);
             }
         } else if (!task.isPaid()) {
-            if (paymentConfig.isPaid(task)) {
-                System.out.println("isPaid");
-//                task.setPaid(true);
-//                task.setActive(true);
-//                taskService.saveTask(task);
-                model.addAttribute("payment", paymentConfig.getHref(task));
-            } else {
-                model.addAttribute("payment", paymentConfig.getHref(task));
-            }
+            model.addAttribute("payment", paymentConfig.getHref(task));
         } else {
             Contract completed = contractService.findByTaskAndCompleted(task);
             if (completed != null) {

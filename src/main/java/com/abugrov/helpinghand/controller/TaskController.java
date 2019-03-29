@@ -65,12 +65,14 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @RequestMapping( value = "/callback", consumes = "application/x-www-form-urlencoded", method = RequestMethod.POST )
+    @PostMapping("/callback")
     public void callback(
             @RequestParam String data,
             @RequestParam String signature
     ) throws IOException {
         System.out.println("inside");
+        System.out.println(data);
+        System.out.println(signature);
         if (!paymentConfig.isValidSignature(data, signature)) {
             PaymentResponseDto resp = paymentConfig.read(data);
             System.out.println("valid");

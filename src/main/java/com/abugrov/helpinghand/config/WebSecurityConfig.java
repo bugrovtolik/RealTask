@@ -23,15 +23,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .authorizeRequests()
-                .antMatchers(
-                        "/",
-                        "/registration",
-                        "/activate/*",
-                        "/user/lostPassword",
-                        "/user/recover/**",
-                        "/img/**",
-                        "/main"
+            .csrf()
+                .ignoringAntMatchers("/task/callback")
+            .and()
+                .authorizeRequests().antMatchers(
+                    "/",
+                    "/registration",
+                    "/activate/*",
+                    "/user/lostPassword",
+                    "/user/recover/**",
+                    "/img/**",
+                    "/main"
                 ).permitAll()
                 .anyRequest().authenticated()
             .and()

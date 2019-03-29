@@ -19,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -64,22 +65,22 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @PostMapping("/{taskId}/paid")
+    @PostMapping("/callback")
     public String getPaid(@RequestParam("data") String data,
-                          @RequestParam("signature") String signature,
-                          @PathVariable("taskId") Task task) throws Exception {
+                          @RequestParam("signature") String signature) throws IOException {
+        System.out.println("inside");
         if (!paymentConfig.isValidSignature(data, signature)) {
             PaymentResponseDto resp = paymentConfig.read(data);
-
-            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
-                if (resp.getStatus() == PaymentResponseDto.Status.sandbox) {
-                    task.setPaid(true);
-                    taskService.saveTask(task);
-                }
-            }
+            System.out.println("valid");
+//            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
+//                if (resp.getStatus() == PaymentResponseDto.Status.sandbox) {
+//                    task.setPaid(true);
+//                    taskService.saveTask(task);
+//                }
+//            }
         }
 
-        return "redirect:/" + task.getId();
+        return "redirect:/task/49";// + task.getId();
     }
 
     @PreAuthorize("hasAuthority('ADMIN') OR #user.id == #task.authorId")
@@ -119,11 +120,15 @@ public class TaskController {
     @PostMapping("/{taskId}/delete")
     @Transactional
     public String delete(@AuthenticationPrincipal User user,
-                         @PathVariable("taskId") Task task) {
-        contractService.deleteByTask(task);
-        taskService.deleteTask(task);
+                         @PathVariable("taskId") Task task) throws Exception {
+        if (paymentConfig.payTo(user, task)) {
+            contractService.deleteByTask(task);
+            taskService.deleteTask(task);
 
-        return "redirect:/main";
+            return "redirect:/main";
+        }
+
+        return "redirect:/task/" + task.getId();
     }
 
     @GetMapping("/{taskId}")
@@ -150,12 +155,13 @@ public class TaskController {
                 model.addAttribute("secret", true);
             }
         } else if (!task.isPaid()) {
-            String status = paymentConfig.getStatus(task.getAuthorId().toString(), task.getId().toString());
-            System.out.println(status);
-            String href = paymentConfig.getHref(user.getId().toString(), task.getId().toString(),
-                    "test", task.getTitle());
-
-            model.addAttribute("payment", href);
+            if (paymentConfig.isPaid(task)) {
+                task.setPaid(true);
+                task.setActive(true);
+                taskService.saveTask(task);
+            } else {
+                model.addAttribute("payment", paymentConfig.getHref(task));
+            }
         } else {
             Contract completed = contractService.findByTaskAndCompleted(task);
             if (completed != null) {

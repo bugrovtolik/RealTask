@@ -1,4 +1,4 @@
-package com.abugrov.helpinghand.config;
+package com.abugrov.helpinghand.service;
 
 import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.domain.User;
@@ -9,15 +9,15 @@ import com.liqpay.LiqPay;
 import com.liqpay.LiqPayUtil;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-@Configuration
-public class PaymentConfig {
+@Service
+public class PaymentService {
     @Value("${liqpay.public_key}")
     private String publicKey;
     @Value("${liqpay.private_key}")
@@ -55,7 +55,7 @@ public class PaymentConfig {
         params.put("sandbox", "1");
         params.put("description", task.getTitle());
         params.put("order_id", task.getId() + "_" + user.getId());
-        //params.put("receiver_card", user.getCreditCardNumber());
+        params.put("receiver_card", "4149629310933759");
 
         LiqPay liqpay = new LiqPay(publicKey, privateKey);
         Map<String, Object> res = liqpay.api("request", params);

@@ -66,8 +66,8 @@ public class TaskController {
     }
 
     @PostMapping("/callback")
-    public void getPaid(@RequestParam("data") String data,
-                        @RequestParam("signature") String signature) throws IOException {
+    public void getPaid(@RequestParam String data,
+                        @RequestParam String signature) throws IOException {
         System.out.println("inside");
         if (!paymentConfig.isValidSignature(data, signature)) {
             PaymentResponseDto resp = paymentConfig.read(data);
@@ -154,9 +154,10 @@ public class TaskController {
             }
         } else if (!task.isPaid()) {
             if (paymentConfig.isPaid(task)) {
-                task.setPaid(true);
-                task.setActive(true);
-                taskService.saveTask(task);
+                System.out.println("isPaid");
+//                task.setPaid(true);
+//                task.setActive(true);
+//                taskService.saveTask(task);
             } else {
                 model.addAttribute("payment", paymentConfig.getHref(task));
             }

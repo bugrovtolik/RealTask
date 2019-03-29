@@ -37,26 +37,13 @@ public class PaymentConfig {
         params.put("sandbox", "1");
         params.put("public_key", publicKey);
         params.put("version", LiqPay.API_VERSION);
-        params.put("server_url", host + "/task/callback");
+        params.put("server_url", host + "/task/" + task.getId() + "/paid");
         params.put("product_url", host + "/task/" + task.getId());
 
         String data = getData(params);
         String signature = getSignature(data);
 
         return "https://liqpay.com/api/3/checkout?data=" + data + "&signature=" + signature;
-    }
-
-    public boolean isPaid(Task task) throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put("action", "status");
-        params.put("version", LiqPay.API_VERSION);
-        params.put("order_id", task.getAuthorId() + "_" + task.getId());
-
-        LiqPay liqpay = new LiqPay(publicKey, privateKey);
-        Map<String, Object> res = liqpay.api("request", params);
-        String status = (String) res.get("status");
-
-        return status.equals("sandbox") || status.equals("success");
     }
 
     public boolean payTo(User user, Task task) throws Exception {

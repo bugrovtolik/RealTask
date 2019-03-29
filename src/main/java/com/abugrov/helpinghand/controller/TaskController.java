@@ -65,8 +65,8 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @PostMapping("{taskId}/callback")
-    public void callback(
+    @PostMapping("{taskId}/paid")
+    public void paymentCallback(
             @RequestParam("data") String data,
             @RequestParam("signature") String signature,
             @PathVariable("taskId") Task task

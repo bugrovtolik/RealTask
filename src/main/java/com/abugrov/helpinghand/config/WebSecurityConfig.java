@@ -23,9 +23,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .csrf()
-                .ignoringAntMatchers("/task/callback")
-            .and()
+//            .csrf()
+//                .ignoringAntMatchers("/task/callback")
+//            .and()
                 .authorizeRequests().antMatchers(
                     "/",
                     "/registration",
@@ -34,7 +34,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     "/user/recover/**",
                     "/img/**",
                     "/main",
-                    "/task/callback"
+                    "/task/*/paid"
                 ).permitAll()
                 .anyRequest().authenticated()
             .and()

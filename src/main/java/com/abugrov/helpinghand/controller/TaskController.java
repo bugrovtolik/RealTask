@@ -66,8 +66,8 @@ public class TaskController {
     }
 
     @PostMapping("/callback")
-    public String getPaid(@RequestParam("data") String data,
-                          @RequestParam("signature") String signature) throws IOException {
+    public void getPaid(@RequestParam("data") String data,
+                        @RequestParam("signature") String signature) throws IOException {
         System.out.println("inside");
         if (!paymentConfig.isValidSignature(data, signature)) {
             PaymentResponseDto resp = paymentConfig.read(data);
@@ -79,8 +79,6 @@ public class TaskController {
 //                }
 //            }
         }
-
-        return "redirect:/task/49";// + task.getId();
     }
 
     @PreAuthorize("hasAuthority('ADMIN') OR #user.id == #task.authorId")

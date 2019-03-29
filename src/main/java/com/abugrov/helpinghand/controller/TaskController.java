@@ -65,9 +65,11 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @PostMapping("/callback")
-    public void getPaid(@RequestParam String data,
-                        @RequestParam String signature) throws IOException {
+    @RequestMapping( value = "/callback", consumes = "application/x-www-form-urlencoded", method = RequestMethod.POST )
+    public void callback(
+            @RequestParam String data,
+            @RequestParam String signature
+    ) throws IOException {
         System.out.println("inside");
         if (!paymentConfig.isValidSignature(data, signature)) {
             PaymentResponseDto resp = paymentConfig.read(data);
@@ -158,6 +160,7 @@ public class TaskController {
 //                task.setPaid(true);
 //                task.setActive(true);
 //                taskService.saveTask(task);
+                model.addAttribute("payment", paymentConfig.getHref(task));
             } else {
                 model.addAttribute("payment", paymentConfig.getHref(task));
             }

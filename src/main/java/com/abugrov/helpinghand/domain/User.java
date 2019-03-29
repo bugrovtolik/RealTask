@@ -1,5 +1,6 @@
 package com.abugrov.helpinghand.domain;
 
+import org.hibernate.validator.constraints.CreditCardNumber;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -7,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 import java.util.Set;
 
@@ -19,15 +21,25 @@ public class User implements UserDetails {
 
     @NotBlank(message = "Вы забыли указать имя и фамилию!")
     private String username;
+
     @NotBlank(message = "Вы забыли указать пароль!")
     private String password;
+
     @NotNull
     private boolean active;
+
+//    @PositiveOrZero
+//    private Long credit;
 
     @NotBlank(message = "Вы забыли указать email!")
     @Email(message = "Введён неверный email!")
     private String email;
+
     private String activationCode;
+
+//    @NotBlank(message = "Вы забыли указать номер кридитной карты!")
+//    @CreditCardNumber(message = "Введён неверный номер кредитной карты!")
+//    private String creditCardNumber;
 
     private String avatar;
 
@@ -35,6 +47,9 @@ public class User implements UserDetails {
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
+    public User() {
+    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -126,4 +141,20 @@ public class User implements UserDetails {
     public void setActivationCode(String activationCode) {
         this.activationCode = activationCode;
     }
+
+//    public String getCreditCardNumber() {
+//        return creditCardNumber;
+//    }
+//
+//    public void setCreditCardNumber(String creditCardNumber) {
+//        this.creditCardNumber = creditCardNumber;
+//    }
+//
+//    public Long getCredit() {
+//        return credit;
+//    }
+//
+//    public void setCredit(Long credit) {
+//        this.credit = credit;
+//    }
 }

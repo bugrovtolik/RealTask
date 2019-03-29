@@ -65,14 +65,11 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @RequestMapping( value = "/callback", consumes = "application/x-www-form-urlencoded", method = RequestMethod.POST )
-    public void callback(
-            @RequestParam String data,
-            @RequestParam String signature
-    ) throws IOException {
+    @RequestMapping(value = "/callback", method = RequestMethod.POST )
+    public void callback(@RequestBody Map<String,String> body) throws IOException {
         System.out.println("inside");
-        if (!paymentConfig.isValidSignature(data, signature)) {
-            PaymentResponseDto resp = paymentConfig.read(data);
+//        if (!paymentConfig.isValidSignature(data, signature)) {
+//            PaymentResponseDto resp = paymentConfig.read(data);
             System.out.println("valid");
 //            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
 //                if (resp.getStatus() == PaymentResponseDto.Status.sandbox) {
@@ -80,7 +77,7 @@ public class TaskController {
 //                    taskService.saveTask(task);
 //                }
 //            }
-        }
+//        }
     }
 
     @PreAuthorize("hasAuthority('ADMIN') OR #user.id == #task.authorId")

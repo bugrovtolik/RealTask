@@ -45,6 +45,8 @@ public class MvcConfig implements WebMvcConfigurer {
         String fixieUrl = System.getenv("FIXIE_URL");
 
         String[] fixieValues = fixieUrl.split("[/(:\\/@)/]+");
+        System.out.println("fixie url   " + fixieUrl);
+        System.out.println("fixie vals   " + fixieValues.toString());
         String fixieUser = fixieValues[1];
         String fixiePassword = fixieValues[2];
         String fixieHost = fixieValues[3];

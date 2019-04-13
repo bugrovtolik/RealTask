@@ -35,6 +35,7 @@
         <div class="navbar-text mr-3">
             <#if user??>
                 <a class="nav-link" href="/user/profile">
+                    ${user.credit} грн
                     <#if user.avatar??>
                         <img src="/img/${user.avatar}">
                     <#else>

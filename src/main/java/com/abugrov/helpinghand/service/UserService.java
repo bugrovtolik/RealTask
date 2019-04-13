@@ -209,4 +209,37 @@ public class UserService implements UserDetailsService {
         
         return false;
     }
+
+    public boolean updatePhoneNumber(User user, String phoneNumber) {
+        if (StringUtils.hasText(phoneNumber)) {
+            user.setPhoneNumber(phoneNumber);
+            userRepo.save(user);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean updateCreditCardNumber(User user, String creditCardNumber) {
+        if (StringUtils.hasText(creditCardNumber)) {
+            user.setCreditCardNumber(creditCardNumber);
+            userRepo.save(user);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean updateCredit(User user, Integer credit) {
+        if (credit >= 0) {
+            user.setCredit(credit);
+            userRepo.save(user);
+
+            return true;
+        }
+
+        return false;
+    }
 }

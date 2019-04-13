@@ -31,16 +31,32 @@
 
 <#if isRegisterForm>
     <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Ваш номер телефона</label>
+        <div class="input-group-prepend">
+            <div class="input-group-text">+38</div>
+        </div>
+        <div class="col-sm-6 pl-0">
+            <input type="text" name="phoneNumber" pattern="^0[0-9]{9}$"
+                   class="form-control ${(phoneError??)?string('is-invalid', '')}"
+                   placeholder="Номер телефона"/>
+            <#if phoneNumberError??>
+                <div class="invalid-feedback">
+                    ${phoneNumberError}
+                </div>
+            </#if>
+        </div>
+    </div>
+    <div class="form-group row">
         <label class="col-sm-2 col-form-label">Подтвердите пароль</label>
         <div class="col-sm-6">
             <input type="password" name="password2"
                    class="form-control ${(password2Error??)?string('is-invalid', '')}"
                    placeholder="Подтвердите пароль"/>
-                <#if password2Error??>
-                    <div class="invalid-feedback">
-                        ${password2Error}
-                    </div>
-                </#if>
+            <#if password2Error??>
+                <div class="invalid-feedback">
+                    ${password2Error}
+                </div>
+            </#if>
         </div>
     </div>
     <div class="form-group row">

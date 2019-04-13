@@ -1,14 +1,13 @@
 package com.abugrov.helpinghand.domain;
 
 import org.hibernate.validator.constraints.CreditCardNumber;
+import org.hibernate.validator.constraints.Length;
+import org.springframework.format.annotation.NumberFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.Set;
 
@@ -25,11 +24,15 @@ public class User implements UserDetails {
     @NotBlank(message = "Вы забыли указать пароль!")
     private String password;
 
+    @Pattern(regexp="^0[0-9]{9}$", message = "Введён неверный номер телефона!")
+    private String phoneNumber;
+
     @NotNull
     private boolean active;
 
-//    @PositiveOrZero
-//    private Long credit;
+    @NotNull
+    @PositiveOrZero
+    private Integer credit;
 
     @NotBlank(message = "Вы забыли указать email!")
     @Email(message = "Введён неверный email!")
@@ -37,9 +40,8 @@ public class User implements UserDetails {
 
     private String activationCode;
 
-//    @NotBlank(message = "Вы забыли указать номер кридитной карты!")
-//    @CreditCardNumber(message = "Введён неверный номер кредитной карты!")
-//    private String creditCardNumber;
+    @CreditCardNumber(message = "Введён неверный номер кредитной карты!")
+    private String creditCardNumber;
 
     private String avatar;
 
@@ -142,19 +144,27 @@ public class User implements UserDetails {
         this.activationCode = activationCode;
     }
 
-//    public String getCreditCardNumber() {
-//        return creditCardNumber;
-//    }
-//
-//    public void setCreditCardNumber(String creditCardNumber) {
-//        this.creditCardNumber = creditCardNumber;
-//    }
-//
-//    public Long getCredit() {
-//        return credit;
-//    }
-//
-//    public void setCredit(Long credit) {
-//        this.credit = credit;
-//    }
+    public String getCreditCardNumber() {
+        return creditCardNumber;
+    }
+
+    public void setCreditCardNumber(String creditCardNumber) {
+        this.creditCardNumber = creditCardNumber;
+    }
+
+    public Integer getCredit() {
+        return credit;
+    }
+
+    public void setCredit(Integer credit) {
+        this.credit = credit;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 }

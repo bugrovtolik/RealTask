@@ -3,21 +3,23 @@ package com.abugrov.helpinghand.controller;
 import com.abugrov.helpinghand.domain.Contract;
 import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.domain.User;
-import com.abugrov.helpinghand.domain.dto.PaymentResponseDto;
 import com.abugrov.helpinghand.service.ContractService;
-import com.abugrov.helpinghand.service.PaymentService;
 import com.abugrov.helpinghand.service.TaskService;
+import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -25,20 +27,22 @@ import java.util.Map;
 @Controller
 @RequestMapping("/task")
 public class TaskController {
-    private final PaymentService paymentService;
     private final TaskService taskService;
     private final ContractService contractService;
+    private final UserService userService;
 
     @Autowired
-    public TaskController(PaymentService paymentService, TaskService taskService, ContractService contractService) {
-        this.paymentService = paymentService;
+    public TaskController(TaskService taskService, ContractService contractService, UserService userService) {
         this.taskService = taskService;
         this.contractService = contractService;
+        this.userService = userService;
     }
 
     @GetMapping("/create")
-    public String getCreate(Model model) {
+    public String getCreate(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("task", "null");
+        model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+
         return "taskCreate";
     }
 
@@ -55,6 +59,10 @@ public class TaskController {
             return "taskCreate";
         }
 
+        if (!task.isCashless()) {
+            task.setActive(true);
+        }
+
         task.setAuthor(user);
 
         taskService.saveTask(task);
@@ -62,23 +70,20 @@ public class TaskController {
         return "redirect:/main";
     }
 
-    @PostMapping("{taskId}/paid")
-    public void paymentCallback(
-            @RequestParam("data") String data,
-            @RequestParam("signature") String signature,
-            @PathVariable("taskId") Task task
-    ) throws IOException {
-        if (paymentService.isValidSignature(data, signature)) {
-            PaymentResponseDto resp = paymentService.read(data);
-            if (resp.getOrderId().equals(task.getAuthorId() + "_" + task.getId())) {
-                if (resp.getStatus() == PaymentResponseDto.Status.sandbox ||
-                    resp.getStatus() == PaymentResponseDto.Status.success) {
-                    task.setPaid(true);
-                    task.setActive(true);
-                    taskService.saveTask(task);
-                }
-            }
+    @PreAuthorize("#user.id == #task.authorId")
+    @GetMapping("/{taskId}/pay")
+    @Transactional
+    public String pay(@AuthenticationPrincipal User user,
+                      @PathVariable("taskId") Task task) {
+        if (userService.updateCredit(user, user.getCredit() - task.getPrice())) {
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            task.setPaid(true);
+            task.setActive(true);
         }
+
+        return "redirect:/task/" + task.getId();
     }
 
     @PreAuthorize("hasAuthority('ADMIN') OR #user.id == #task.authorId")
@@ -87,6 +92,7 @@ public class TaskController {
                           @PathVariable("taskId") Task task, Model model) {
         model.addAttribute(task);
         model.addAttribute("taskId", task.getId());
+        model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
 
         return "taskEdit";
     }
@@ -108,6 +114,20 @@ public class TaskController {
             return "taskEdit";
         }
 
+        if (!oldTask.isCashless() && newTask.isCashless()) {
+            oldTask.setActive(false);
+        } else if (oldTask.isCashless() && !newTask.isCashless()) {
+            if (oldTask.isPaid()) {
+                if (userService.updateCredit(user, user.getCredit() + oldTask.getPrice())) {
+                    Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    oldTask.setPaid(false);
+                }
+            }
+            oldTask.setActive(true);
+        }
+
         taskService.updateTask(oldTask, newTask);
         contractService.deleteByTask(oldTask);
 
@@ -118,21 +138,21 @@ public class TaskController {
     @PostMapping("/{taskId}/delete")
     @Transactional
     public String delete(@AuthenticationPrincipal User user,
-                         @PathVariable("taskId") Task task) throws Exception {
-        if (paymentService.payTo(user, task)) {
-            contractService.deleteByTask(task);
-            taskService.deleteTask(task);
-
-            return "redirect:/main";
+                         @PathVariable("taskId") Task task) {
+        if (task.isPaid()) {
+            user.setCredit(user.getCredit() + task.getPrice());
         }
 
-        return "redirect:/task/" + task.getId();
+        contractService.deleteByTask(task);
+        taskService.deleteTask(task);
+
+        return "redirect:/main";
     }
 
     @GetMapping("/{taskId}")
     public String view(@AuthenticationPrincipal User user,
                        @PathVariable("taskId") Task task,
-                       Model model) throws Exception {
+                       Model model) {
         if (task.isActive()) {
             List<Contract> contracts;
             Contract accepted = contractService.findByTaskAndAccepted(task);
@@ -152,8 +172,6 @@ public class TaskController {
             if (accepted != null && (user.isAdmin() || user.getId().equals(accepted.getUser().getId()))) {
                 model.addAttribute("secret", true);
             }
-        } else if (!task.isPaid()) {
-            model.addAttribute("payment", paymentService.getHref(task));
         } else {
             Contract completed = contractService.findByTaskAndCompleted(task);
             if (completed != null) {
@@ -181,6 +199,10 @@ public class TaskController {
         contractService.deleteByTaskAndNotAccepted(task);
         taskService.deactivate(task);
 
+        if (task.isPaid()) {
+            contract.getUser().setCredit(contract.getUser().getCredit() + task.getPrice());
+        }
+
         return "redirect:/task/" + task.getId();
     }
 
@@ -199,6 +221,10 @@ public class TaskController {
 
         contractService.deleteByTaskAndNotAccepted(task);
         taskService.deactivate(task);
+
+        if (task.isPaid()) {
+            user.setCredit(user.getCredit() + task.getPrice());
+        }
 
         return "redirect:/task/" + task.getId();
     }

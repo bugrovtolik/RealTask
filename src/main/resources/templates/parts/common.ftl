@@ -1,5 +1,6 @@
 <#macro page>
 <!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Helping Hand</title>

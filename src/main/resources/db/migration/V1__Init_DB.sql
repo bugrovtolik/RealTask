@@ -14,6 +14,8 @@ create table task (
     lng varchar(255) not null,
     user_id int8 not null,
     active boolean not null,
+    paid boolean not null,
+    cashless boolean not null,
     primary key (id)
 );
 
@@ -26,10 +28,24 @@ create table usr (
     id int8 not null,
     activation_code varchar(255),
     active boolean not null,
+    credit_card_number varchar(16),
+    phone_number varchar(10) not null,
+    credit int4 not null,
     email varchar(255) not null,
     avatar varchar(255),
     password varchar(255) not null,
     username varchar(255) not null,
+    primary key (id)
+);
+
+create table contract (
+    id int8 not null,
+    user_id int8 not null,
+    task_id int8 not null,
+    time timestamp not null,
+    text varchar(255),
+    accepted boolean,
+    completed boolean,
     primary key (id)
 );
 
@@ -39,4 +55,12 @@ alter table if exists task
 
 alter table if exists user_role
     add constraint user_role_user_fk
+    foreign key (user_id) references usr;
+
+alter table if exists contract
+    add constraint contract_task_fk
+    foreign key (task_id) references task;
+
+alter table if exists contract
+    add constraint contract_user_fk
     foreign key (user_id) references usr;

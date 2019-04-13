@@ -53,6 +53,7 @@ public class TaskService {
         oldTask.setExecFrom(newTask.getExecFromFormatted());
         oldTask.setExecTo(newTask.getExecToFormatted());
         oldTask.setPrice(newTask.getPrice());
+        oldTask.setCashless(newTask.isCashless());
 
         taskRepo.save(oldTask);
     }

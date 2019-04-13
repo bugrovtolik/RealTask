@@ -2,19 +2,27 @@ package com.abugrov.helpinghand.service;
 
 import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.domain.User;
-import com.abugrov.helpinghand.domain.dto.PaymentResponseDto;
+import com.abugrov.helpinghand.domain.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.liqpay.LiqPay;
 import com.liqpay.LiqPayUtil;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class PaymentService {
@@ -24,60 +32,172 @@ public class PaymentService {
     private String privateKey;
     @Value("${hostname}")
     private String host;
+    @Value("${p24.merchant_id}")
+    private Long merchantId;
+    @Value("${p24.merchant_password}")
+    private String merchantPassword;
 
-    private static final ObjectReader OBJECT_READER = new ObjectMapper().readerFor(PaymentResponseDto.class);
+    private final RestTemplate restTemplate;
 
-    public String getHref(Task task) {
+    private final static String TO_CARD_URL = "https://api.privatbank.ua/p24api/pay_pb";
+    private final static String TO_PHONE_URL = "https://api.privatbank.ua/p24api/directfill";
+    private final static ObjectReader OBJECT_READER = new ObjectMapper().readerFor(LiqPayResponseDto.class);
+
+    @Autowired
+    public PaymentService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public String getHref(User user, Integer amount) {
         Map<String, String> params = new HashMap<>();
         params.put("action", "pay");
-        params.put("amount", task.getPrice().toString());
         params.put("currency", "UAH");
-        params.put("description", task.getDescription());
-        params.put("order_id", task.getAuthorId() + "_" + task.getId());
+        params.put("amount", amount.toString());
+        params.put("description", "RealTaskPayment");
+        params.put("order_id", UUID.randomUUID().toString());
         params.put("sandbox", "1");
         params.put("public_key", publicKey);
         params.put("version", LiqPay.API_VERSION);
-        params.put("server_url", host + "/task/" + task.getId() + "/paid");
-        params.put("product_url", host + "/task/" + task.getId());
+        params.put("server_url", host + "/user/" + user.getId() + "/paid");
+        params.put("product_url", host + "/user/" + user.getId() + "/profile");
 
-        String data = getData(params);
-        String signature = getSignature(data);
+        String data = getLiqPayData(params);
+        String signature = getLiqPaySign(data);
 
-        return "https://liqpay.com/api/3/checkout?data=" + data + "&signature=" + signature;
+        return "https://liqpay.ua/api/3/checkout?data=" + data + "&signature=" + signature;
     }
 
-    public boolean payTo(User user, Task task) throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put("action", "p2pcredit");
-        params.put("version", LiqPay.API_VERSION);
-        params.put("amount", task.getPrice().toString());
-        params.put("currency", "UAH");
-        params.put("sandbox", "1");
-        params.put("description", task.getTitle());
-        params.put("order_id", task.getId() + "_" + user.getId());
-        params.put("receiver_card", "4149629310933759");
+    public boolean transferToPhone(User user, Integer amount) throws Exception {
+        JAXBContext context = JAXBContext.newInstance(PrivatBankRequestDto.class);
+        Marshaller marshaller = context.createMarshaller();
 
-        LiqPay liqpay = new LiqPay(publicKey, privateKey);
-        Map<String, Object> res = liqpay.api("request", params);
-        String status = (String) res.get("status");
-        System.out.println(res);
+        PBProp phone = new PBProp();
+        phone.setName("phone");
+        phone.setValue("+38" + user.getPhoneNumber());
+        PBProp amt = new PBProp();
+        amt.setName("amt");
+        amt.setValue(amount.toString());
 
-        return status.equals("sandbox") || status.equals("success");
+        PBPayment payment = new PBPayment();
+        payment.addProp(phone);
+        payment.addProp(amt);
+
+        PBData data = new PBData();
+        data.setOper("cmt");
+        data.setWait(90);
+        data.setTest(1);
+        data.setPayment(payment);
+
+        JAXBContext dataContext = JAXBContext.newInstance(PBData.class);
+        Marshaller dataMarshaller = dataContext.createMarshaller();
+
+        StringWriter datasw = new StringWriter();
+        dataMarshaller.marshal(data, datasw);
+
+        String dataXml = datasw.toString();
+        dataXml = dataXml.substring(61, dataXml.length() - 7);
+        System.out.println("dataXml: " + dataXml);
+
+        PBMerchant merchant = new PBMerchant();
+        merchant.setId(merchantId);
+        merchant.setSignature(getPBSign(dataXml));
+
+        PrivatBankRequestDto requestDto = new PrivatBankRequestDto();
+        requestDto.setMerchant(merchant);
+        requestDto.setData(data);
+
+        StringWriter sw = new StringWriter();
+        marshaller.marshal(requestDto, sw);
+
+        System.out.println(sw.toString());
+        PrivatBankResponseDto response = restTemplate.postForObject(TO_PHONE_URL, requestDto, PrivatBankResponseDto.class);
+
+        System.out.println("requestXml: " + response);
+        System.out.println(response != null ? response.getData().getPayment().getState() : "was null");
+
+        return false;
     }
 
-    private String getSignature(String data) {
+    public boolean transferToPrivatCard(User user, Integer amount) throws JAXBException {
+        JAXBContext context = JAXBContext.newInstance(PrivatBankRequestDto.class);
+        Marshaller marshaller = context.createMarshaller();
+
+        PBProp card = new PBProp();
+        card.setName("b_card_or_acc");
+        card.setValue(user.getCreditCardNumber());
+        PBProp amt = new PBProp();
+        amt.setName("amt");
+        amt.setValue(amount.toString());
+        PBProp ccy = new PBProp();
+        ccy.setName("ccy");
+        ccy.setValue("UAH");
+        PBProp details = new PBProp();
+        details.setName("details");
+        details.setValue("HelpingHandPayment");
+
+        PBPayment payment = new PBPayment();
+        payment.addProp(card);
+        payment.addProp(amt);
+        payment.addProp(ccy);
+        payment.addProp(details);
+
+        PBData data = new PBData();
+        data.setOper("cmt");
+        data.setWait(90);
+        data.setTest(1);
+        data.setPayment(payment);
+
+        JAXBContext dataContext = JAXBContext.newInstance(PBData.class);
+        Marshaller dataMarshaller = dataContext.createMarshaller();
+
+        StringWriter datasw = new StringWriter();
+        dataMarshaller.marshal(data, datasw);
+
+        String dataXml = datasw.toString();
+        dataXml = dataXml.substring(61, dataXml.length() - 7);
+        System.out.println("dataXml: " + dataXml);
+
+        PBMerchant merchant = new PBMerchant();
+        merchant.setId(merchantId);
+        merchant.setSignature(getPBSign(dataXml));
+
+        PrivatBankRequestDto requestDto = new PrivatBankRequestDto();
+        requestDto.setMerchant(merchant);
+        requestDto.setData(data);
+
+        StringWriter sw = new StringWriter();
+        marshaller.marshal(requestDto, sw);
+
+        System.out.println(sw.toString());
+        PrivatBankResponseDto response = restTemplate.postForObject(TO_CARD_URL, requestDto, PrivatBankResponseDto.class);
+
+        System.out.println("requestXml: " + response);
+        System.out.println(response != null ? response.getData().getPayment().getState() : "was null");
+
+        return false;
+    }
+
+    private String getLiqPaySign(String data) {
         return LiqPayUtil.base64_encode(LiqPayUtil.sha1(privateKey + data + privateKey));
     }
 
-    private String getData(Map<String, String> params) {
+    private String getPBSign(String data) {
+        String result = DigestUtils.sha1Hex(DigestUtils.md5Hex(data + merchantPassword));
+
+        System.out.println("result: " + result);
+
+        return result;
+    }
+
+    private String getLiqPayData(Map<String, String> params) {
         return LiqPayUtil.base64_encode(JSONObject.toJSONString(params));
     }
 
-    public PaymentResponseDto read(String data) throws IOException {
+    public LiqPayResponseDto read(String data) throws IOException {
         return OBJECT_READER.readValue(Base64.getDecoder().decode(data));
     }
 
     public boolean isValidSignature(String data, String signature) {
-        return signature.equals(getSignature(data));
+        return signature.equals(getLiqPaySign(data));
     }
 }

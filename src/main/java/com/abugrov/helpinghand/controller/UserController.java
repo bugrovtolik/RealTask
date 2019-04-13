@@ -1,34 +1,37 @@
 package com.abugrov.helpinghand.controller;
 
-import com.abugrov.helpinghand.domain.Contract;
 import com.abugrov.helpinghand.domain.Role;
 import com.abugrov.helpinghand.domain.User;
-import com.abugrov.helpinghand.service.ContractService;
+import com.abugrov.helpinghand.domain.dto.LiqPayResponseDto;
+import com.abugrov.helpinghand.service.PaymentService;
 import com.abugrov.helpinghand.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Collections;
-import java.util.List;
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.util.Map;
 
 @Controller
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final PaymentService paymentService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PaymentService paymentService) {
         this.userService = userService;
+        this.paymentService = paymentService;
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -46,6 +49,61 @@ public class UserController {
         model.addAttribute("roles", Role.values());
 
         return "userEdit";
+    }
+
+    @PostMapping("{userId}/paid")
+    public void paymentCallback(
+            @RequestParam("data") String data,
+            @RequestParam("signature") String signature,
+            @PathVariable("userId") User user
+    ) throws IOException {
+        if (paymentService.isValidSignature(data, signature)) {
+            LiqPayResponseDto resp = paymentService.read(data);
+            if (resp.getStatus() == LiqPayResponseDto.Status.sandbox ||
+                    resp.getStatus() == LiqPayResponseDto.Status.success) {
+                if (userService.updateCredit(user, user.getCredit() + resp.getAmount())) {
+                    Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        }
+    }
+
+    @PostMapping("payToUser")
+    @Transactional
+    public String payToUser(
+            @AuthenticationPrincipal User user,
+            @RequestParam("amount") Integer amount,
+            @RequestParam("by") String by,
+            RedirectAttributes redirectAttrs
+    ) throws Exception {
+        if (user.getCredit() >= amount) {
+            boolean success = false;
+
+            if (by.equals("phone")) {
+                success = paymentService.transferToPhone(user, amount);
+                by = " номер телефона ";
+            } else if (by.equals("card")) {
+                success = paymentService.transferToPrivatCard(user, amount);
+                by = "у кредитную карту ";
+            }
+
+            if (success && userService.updateCredit(user, user.getCredit() + amount)) {
+                Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                redirectAttrs.addFlashAttribute("paymentMessage", "На Ваш" + by + "успешно переведены " + amount + " грн");
+                redirectAttrs.addFlashAttribute("messageType", "success");
+            } else {
+                redirectAttrs.addFlashAttribute("paymentMessage", "Ошибка!");
+                redirectAttrs.addFlashAttribute("messageType", "danger");
+            }
+        } else {
+            redirectAttrs.addFlashAttribute("paymentMessage", "Недостаточно денег!");
+            redirectAttrs.addFlashAttribute("messageType", "danger");
+        }
+
+        return "redirect:/user/profile";
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -66,8 +124,18 @@ public class UserController {
     @GetMapping("profile")
     public String getProfile(Model model, @AuthenticationPrincipal User user) {
         model.addAttribute("username", user.getUsername());
+        model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
 
         return "profile";
+    }
+
+    @PostMapping("payToService")
+    public RedirectView getPayToService(@RequestParam("amount") Integer amount,
+                                  @AuthenticationPrincipal User user) {
+        RedirectView redirectView = new RedirectView();
+        redirectView.setUrl(paymentService.getHref(user, amount));
+
+        return redirectView;
     }
 
     @PostMapping("updateAvatar")
@@ -104,6 +172,46 @@ public class UserController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("usernameMessage", "Вы ничего не ввели!");
+            redirectAttrs.addFlashAttribute("messageType", "danger");
+        }
+
+        return "redirect:/user/profile";
+    }
+
+    @PostMapping("updatePhoneNumber")
+    public String updatePhoneNumber(
+            @AuthenticationPrincipal User user,
+            @RequestParam String phoneNumber,
+            RedirectAttributes redirectAttrs
+    ) {
+        if (userService.updatePhoneNumber(user, phoneNumber)) {
+            redirectAttrs.addFlashAttribute("phoneMessage", "Номер телефона успешно изменён!");
+            redirectAttrs.addFlashAttribute("messageType", "success");
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            redirectAttrs.addFlashAttribute("phoneMessage", "Вы ничего не ввели!");
+            redirectAttrs.addFlashAttribute("messageType", "danger");
+        }
+
+        return "redirect:/user/profile";
+    }
+
+    @PostMapping("updateCreditCardNumber")
+    public String updateCreditCardNumber(
+            @AuthenticationPrincipal User user,
+            @RequestParam String creditCardNumber,
+            RedirectAttributes redirectAttrs
+    ) {
+        if (userService.updateCreditCardNumber(user, creditCardNumber)) {
+            redirectAttrs.addFlashAttribute("creditCardMessage", "Номер кредитной карты успешно изменён!");
+            redirectAttrs.addFlashAttribute("messageType", "success");
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            redirectAttrs.addFlashAttribute("creditCardMessage", "Номер кредитной карты введён неверно!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 

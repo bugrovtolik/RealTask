@@ -133,6 +133,18 @@
                 <label>Оплата работы:</label>
                 <input type="number" name="price" value="<#if task != 'null'>${task.price}</#if>" class="form-control mx-2" min="0" placeholder="Цена"<#if create> required</#if>/>грн
             </div>
+
+            <div class="form-group">
+                <label>Наличный или безналичный расчёт:</label>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-outline-dark<#if task != 'null' && !task.cashless || task == 'null'> active</#if>">
+                        <input type="radio" name="cashless" id="cashlessFalse" value="false" autocomplete="off"<#if task != 'null' && !task.cashless || task == 'null'> checked</#if>> Наличный
+                    </label>
+                    <label class="btn btn-outline-dark<#if task != 'null' && task.cashless> active</#if>">
+                        <input type="radio" name="cashless" id="cashlessTrue" value="true" autocomplete="off"<#if !hasCreditCard> disabled<#elseif task != 'null' && task.cashless> checked</#if>> Безналичный
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 

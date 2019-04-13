@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         getterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE
 )
-public class PaymentResponseDto {
+public class LiqPayResponseDto {
     public enum Status {
         // Конечные статусы платежа
         success(Type.FINAL), // успешный платеж

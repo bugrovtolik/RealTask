@@ -1,1 +1,0 @@
-alter table task add column paid boolean not null default false;

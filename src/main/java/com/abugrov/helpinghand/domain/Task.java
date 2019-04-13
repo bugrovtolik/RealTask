@@ -47,6 +47,9 @@ public class Task {
     @NotNull
     private boolean paid;
 
+    @NotNull
+    private boolean cashless;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User author;
@@ -187,5 +190,13 @@ public class Task {
 
     public void setPaid(boolean paid) {
         this.paid = paid;
+    }
+
+    public boolean isCashless() {
+        return cashless;
+    }
+
+    public void setCashless(boolean cashless) {
+        this.cashless = cashless;
     }
 }

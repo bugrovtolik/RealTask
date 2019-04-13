@@ -57,6 +57,7 @@ public class UserController {
             @RequestParam("signature") String signature,
             @PathVariable("userId") User user
     ) throws IOException {
+        System.out.println("callback " + data + " " + signature);
         if (paymentService.isValidSignature(data, signature)) {
             LiqPayResponseDto resp = paymentService.read(data);
             if (resp.getStatus() == LiqPayResponseDto.Status.sandbox ||

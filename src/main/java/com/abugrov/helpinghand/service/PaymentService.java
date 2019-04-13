@@ -110,10 +110,10 @@ public class PaymentService {
         marshaller.marshal(requestDto, sw);
 
         System.out.println(sw.toString());
-        PrivatBankResponseDto response = restTemplate.postForObject(TO_PHONE_URL, requestDto, PrivatBankResponseDto.class);
+        String response = restTemplate.postForObject(TO_PHONE_URL, requestDto, String.class);
 
         System.out.println("requestXml: " + response);
-        System.out.println(response != null ? response.getData().getPayment().getState() : "was null");
+        //System.out.println(response != null ? response.getData().getPayment().getState() : "was null");
 
         return false;
     }

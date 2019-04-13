@@ -1,17 +1,7 @@
 package com.abugrov.helpinghand.config;
 
 import com.cloudinary.Cloudinary;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +13,6 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
-import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
@@ -50,17 +39,19 @@ public class MvcConfig implements WebMvcConfigurer {
         String fixieHost = fixieValues[3];
         int fixiePort = Integer.parseInt(fixieValues[4]);
 
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(fixieHost, fixiePort),
-                new UsernamePasswordCredentials(fixieUser, fixiePassword));
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        Authenticator proxyAuthenticator = (route, response) -> {
+            String credential = Credentials.basic(fixieUser, fixiePassword);
+            return response.request().newBuilder()
+                    .header("Proxy-Authorization", credential)
+                    .build();
+        };
 
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider).build();
-        HttpComponentsClientHttpRequestFactory requestFactory =
-                new HttpComponentsClientHttpRequestFactory();
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(fixieHost, fixiePort));
+        clientBuilder.proxy(proxy).proxyAuthenticator(proxyAuthenticator);
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 
-        requestFactory.setHttpClient(httpclient);
+        requestFactory.setProxy(proxy);
 
         return new RestTemplate(requestFactory);
     }

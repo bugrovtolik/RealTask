@@ -1,1 +1,0 @@
-web: java -Djdk.http.auth.tunneling.disabledSchemes=""

@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -jar -Djdk.http.auth.tunneling.disabledSchemes="" $JAR_OPTS
+web: java -jar -Djdk.http.auth.tunneling.disabledSchemes=""

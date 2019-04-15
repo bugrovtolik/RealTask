@@ -93,7 +93,7 @@
     </dependencies>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>1.7.0_201</java.version>
     </properties>
 
     <build>

@@ -40,7 +40,6 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public RestTemplate getRestTemplate() {
         String fixieUrl = System.getenv("FIXIE_URL");
-        fixieUrl = "http://fixie:cpH8JaRJlBHgvdo@velodrome.usefixie.com:80";
 
         String[] fixieValues = fixieUrl.split("[/(:\\/@)/]+");
         String fixieUser = fixieValues[1];

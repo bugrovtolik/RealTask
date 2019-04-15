@@ -6,10 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Application {
     static {
-        System.out.println("before " + System.getProperty("jdk.http.auth.tunneling.disabledSchemes",""));
-        System.out.println("JAVA before " + System.getProperty("JAVA_TOOL_OPTIONS"));
-        System.setProperty("JAVA_TOOL_OPTIONS","jdk.http.auth.tunneling.disabledSchemes=");
-        System.out.println("JAVA after " + System.getProperty("JAVA_TOOL_OPTIONS"));
+        System.out.println("before " + System.getProperty("jdk.http.auth.tunneling.disabledSchemes"));
+        System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
     }
 
     public static void main(String[] args) {

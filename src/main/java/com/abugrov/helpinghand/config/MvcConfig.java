@@ -48,11 +48,6 @@ public class MvcConfig implements WebMvcConfigurer {
         String fixieHost = fixieValues[3];
         int fixiePort = Integer.parseInt(fixieValues[4]);
 
-        System.setProperty("http.proxyHost", "hostAddress");
-        System.setProperty("http.proxyPort", "portNumber");
-        System.setProperty("http.proxyUser", fixieUser);
-        System.setProperty("http.proxyPassword", fixiePassword);
-
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
         Authenticator proxyAuthenticator = (route, response) -> {
             String credential = Credentials.basic(fixieUser, fixiePassword);

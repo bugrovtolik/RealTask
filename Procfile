@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -jar -Djdk.http.auth.tunneling.disabledSchemes="" -Dserver.port=$PORT ./target/RealTask-1.0-SNAPSHOT.jar $JAR_OPTS
+web: java $JAVA_OPTS -Djdk.http.auth.tunneling.disabledSchemes="" -jar -Dserver.port=$PORT ./target/RealTask-1.0-SNAPSHOT.jar $JAR_OPTS

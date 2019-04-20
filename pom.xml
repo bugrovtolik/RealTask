@@ -92,11 +92,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <jdk.http.auth.tunneling.disabledSchemes>""</jdk.http.auth.tunneling.disabledSchemes>
-        <java.version>1.8</java.version>
-    </properties>
-
     <build>
         <plugins>
             <plugin>

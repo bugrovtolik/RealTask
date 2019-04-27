@@ -11,17 +11,6 @@ import java.util.Map;
 public class Application {
     public static void main(String[] args) {
         System.out.println("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
-        try {
-            Map<String, String> env = System.getenv();
-            Class<?> cl = env.getClass();
-            Field field = cl.getDeclaredField("m");
-            field.setAccessible(true);
-            Map<String, String> writableEnv = (Map<String, String>) field.get(env);
-            writableEnv.put("JAVA_TOOL_OPTIONS", System.getenv("JAVA_TOOL_OPTIONS") + " -Djdk.http.auth.proxying.disabledSchemes= -Djdk.http.auth.tunneling.disabledSchemes=");
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to set environment variable", e);
-        }
-        System.out.println("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
         SpringApplication.run(Application.class, args);
     }
 }

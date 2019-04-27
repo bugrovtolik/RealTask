@@ -75,9 +75,11 @@ public class UserController {
             boolean success = false;
 
             if (by.equals("phone")) {
+                System.out.println("trying by phone");
                 success = paymentService.transferToPhone(user, amount);
                 by = " номер телефона ";
             } else if (by.equals("card")) {
+                System.out.println("trying by card");
                 success = paymentService.transferToPrivatCard(user, amount);
                 by = "у кредитную карту ";
             }

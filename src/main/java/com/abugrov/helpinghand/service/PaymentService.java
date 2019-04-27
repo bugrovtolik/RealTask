@@ -1,6 +1,5 @@
 package com.abugrov.helpinghand.service;
 
-import com.abugrov.helpinghand.domain.Task;
 import com.abugrov.helpinghand.domain.User;
 import com.abugrov.helpinghand.domain.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -109,12 +108,9 @@ public class PaymentService {
         StringWriter sw = new StringWriter();
         marshaller.marshal(requestDto, sw);
 
-        System.out.println(sw.toString());
         String response = restTemplate.postForObject(TO_PHONE_URL, requestDto, String.class);
 
-        System.out.println("fixie url:   " + System.getenv("FIXIE_URL"));
-
-        System.out.println("requestXml: " + response);
+        System.out.println("response: " + response);
         //System.out.println(response != null ? response.getData().getPayment().getState() : "was null");
 
         return false;
@@ -184,11 +180,7 @@ public class PaymentService {
     }
 
     private String getPBSign(String data) {
-        String result = DigestUtils.sha1Hex(DigestUtils.md5Hex(data + merchantPassword));
-
-        System.out.println("result: " + result);
-
-        return result;
+        return DigestUtils.sha1Hex(DigestUtils.md5Hex(data + merchantPassword));
     }
 
     private String getLiqPayData(Map<String, String> params) {

@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -32,7 +32,7 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public RestTemplate getRestTemplate() {
         String fixieUrl = System.getenv("FIXIE_URL");
-
+        fixieUrl = "http://fixie:cpH8JaRJlBHgvdo@velodrome.usefixie.com:80";
         String[] fixieValues = fixieUrl.split("[/(:\\/@)/]+");
         String fixieUser = fixieValues[1];
         String fixiePassword = fixieValues[2];
@@ -49,11 +49,8 @@ public class MvcConfig implements WebMvcConfigurer {
 
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(fixieHost, fixiePort));
         clientBuilder.proxy(proxy).proxyAuthenticator(proxyAuthenticator);
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 
-        requestFactory.setProxy(proxy);
-
-        return new RestTemplate(requestFactory);
+        return new RestTemplate(new OkHttp3ClientHttpRequestFactory(clientBuilder.build()));
     }
 
     @Bean

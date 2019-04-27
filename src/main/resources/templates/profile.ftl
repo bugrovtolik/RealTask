@@ -61,8 +61,8 @@
             <div class="input-group-prepend">
                 <div class="input-group-text">+38</div>
             </div>
-            <div class="col-sm-6 pl-0">
-                <input type="text" pattern="^0[0-9]{9}$" name="phoneNumber" class="form-control" placeholder="Номер телефона" required/>
+            <div class="col-sm-2 pl-0">
+                <input type="text" maxlength="10" pattern="^0[0-9]{9}$" name="phoneNumber" class="form-control" placeholder="Номер телефона" required/>
             </div>
         </div>
         <input type="hidden" name="_csrf" value="${_csrf.token}" />
@@ -78,8 +78,8 @@
     <form method="post" action="/user/updateCreditCardNumber">
         <div class="form-group row">
             <label class="col-sm-3 col-form-label">Новый номер кредитной карты</label>
-            <div class="col-sm-6">
-                <input type="text" pattern="^[0-9]{16}$" name="creditCardNumber" class="form-control" placeholder="Номер кредитной карты" required/>
+            <div class="col-sm-2">
+                <input type="text" maxlength="16" pattern="^[0-9]{16}$" name="creditCardNumber" class="form-control" placeholder="Номер кредитной карты" required/>
             </div>
         </div>
         <input type="hidden" name="_csrf" value="${_csrf.token}" />
@@ -144,6 +144,6 @@
             </div>
         </div>
         <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <button class="btn btn-primary" type="submit">Отправить</button>
     </form>
 </@c.page>

@@ -15,7 +15,7 @@ public class Application {
             newArgs[i] = args[i];
         }
         newArgs[args.length] = "-Djdk.http.auth.tunneling.disabledSchemes=";
-        System.out.println("newArgs is: " + newArgs[0] + " " + args.length);
+        System.out.println("newArgs is: " + newArgs[0] + " " + newArgs[1] + " " + args.length);
         SpringApplication.run(Application.class, newArgs);
     }
 }

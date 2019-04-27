@@ -6,10 +6,7 @@ import com.abugrov.helpinghand.domain.dto.LiqPayResponseDto;
 import com.abugrov.helpinghand.service.PaymentService;
 import com.abugrov.helpinghand.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -19,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.Map;
 
@@ -62,10 +58,7 @@ public class UserController {
             LiqPayResponseDto resp = paymentService.read(data);
             if (resp.getStatus() == LiqPayResponseDto.Status.sandbox ||
                     resp.getStatus() == LiqPayResponseDto.Status.success) {
-                if (userService.updateCredit(user, user.getCredit() + resp.getAmount())) {
-                    Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
+                userService.updateCredit(user, user.getCredit() + resp.getAmount());
             }
         }
     }
@@ -90,9 +83,6 @@ public class UserController {
             }
 
             if (success && userService.updateCredit(user, user.getCredit() + amount)) {
-                Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
                 redirectAttrs.addFlashAttribute("paymentMessage", "На Ваш" + by + "успешно переведены " + amount + " грн");
                 redirectAttrs.addFlashAttribute("messageType", "success");
             } else {
@@ -116,8 +106,6 @@ public class UserController {
             @RequestParam("userId") User user
     ) throws Exception {
         userService.saveUser(user, username, form, file);
-        Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return "redirect:/user";
     }
@@ -148,9 +136,6 @@ public class UserController {
         if (userService.updateAvatar(user, file)) {
             redirectAttrs.addFlashAttribute("avatarMessage", "Изображение профиля успешно изменено!");
             redirectAttrs.addFlashAttribute("messageType", "success");
-
-            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("avatarMessage", "Этот файл не подходит!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
@@ -168,9 +153,6 @@ public class UserController {
         if (userService.updateUsername(user, username)) {
             redirectAttrs.addFlashAttribute("usernameMessage", "Имя и фамилия успешно изменены!");
             redirectAttrs.addFlashAttribute("messageType", "success");
-
-            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("usernameMessage", "Вы ничего не ввели!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
@@ -188,9 +170,6 @@ public class UserController {
         if (userService.updatePhoneNumber(user, phoneNumber)) {
             redirectAttrs.addFlashAttribute("phoneMessage", "Номер телефона успешно изменён!");
             redirectAttrs.addFlashAttribute("messageType", "success");
-
-            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("phoneMessage", "Вы ничего не ввели!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
@@ -208,9 +187,6 @@ public class UserController {
         if (userService.updateCreditCardNumber(user, creditCardNumber)) {
             redirectAttrs.addFlashAttribute("creditCardMessage", "Номер кредитной карты успешно изменён!");
             redirectAttrs.addFlashAttribute("messageType", "success");
-
-            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
             redirectAttrs.addFlashAttribute("creditCardMessage", "Номер кредитной карты введён неверно!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
@@ -231,9 +207,6 @@ public class UserController {
             if (userService.updatePassword(user, oldpass, newpass)) {
                 redirectAttrs.addFlashAttribute("passwordMessage", "Пароль успешно изменён!");
                 redirectAttrs.addFlashAttribute("messageType", "success");
-
-                Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
                 redirectAttrs.addFlashAttribute("passwordMessage","Текущий пароль введён неверно!");
                 redirectAttrs.addFlashAttribute("messageType", "danger");

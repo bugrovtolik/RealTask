@@ -8,16 +8,16 @@ import com.abugrov.helpinghand.service.TaskService;
 import com.abugrov.helpinghand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -76,9 +76,6 @@ public class TaskController {
     public String pay(@AuthenticationPrincipal User user,
                       @PathVariable("taskId") Task task) {
         if (userService.updateCredit(user, user.getCredit() - task.getPrice())) {
-            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
             task.setPaid(true);
             task.setActive(true);
         }
@@ -119,9 +116,6 @@ public class TaskController {
         } else if (oldTask.isCashless() && !newTask.isCashless()) {
             if (oldTask.isPaid()) {
                 if (userService.updateCredit(user, user.getCredit() + oldTask.getPrice())) {
-                    Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
                     oldTask.setPaid(false);
                 }
             }
@@ -140,7 +134,7 @@ public class TaskController {
     public String delete(@AuthenticationPrincipal User user,
                          @PathVariable("taskId") Task task) {
         if (task.isPaid()) {
-            user.setCredit(user.getCredit() + task.getPrice());
+            userService.updateCredit(user,user.getCredit() + task.getPrice());
         }
 
         contractService.deleteByTask(task);

@@ -8,10 +8,13 @@ import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,6 +162,9 @@ public class UserService implements UserDetailsService {
             user.setPassword(passwordEncoder.encode(newpass));
             userRepo.save(user);
 
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             return true;
         }
 
@@ -170,6 +176,9 @@ public class UserService implements UserDetailsService {
             user.setActivationCode(null);
             user.setPassword(passwordEncoder.encode(newpass));
             userRepo.save(user);
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             return true;
         }
@@ -193,6 +202,9 @@ public class UserService implements UserDetailsService {
 
             userRepo.save(user);
 
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             return true;
         }
 
@@ -203,6 +215,9 @@ public class UserService implements UserDetailsService {
         if (StringUtils.hasText(username)) {
             user.setUsername(username);
             userRepo.save(user);
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             return true;
         }
@@ -215,6 +230,9 @@ public class UserService implements UserDetailsService {
             user.setPhoneNumber(phoneNumber);
             userRepo.save(user);
 
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             return true;
         }
 
@@ -226,6 +244,9 @@ public class UserService implements UserDetailsService {
             user.setCreditCardNumber(creditCardNumber);
             userRepo.save(user);
 
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             return true;
         }
 
@@ -236,6 +257,9 @@ public class UserService implements UserDetailsService {
         if (credit >= 0) {
             user.setCredit(credit);
             userRepo.save(user);
+
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             return true;
         }

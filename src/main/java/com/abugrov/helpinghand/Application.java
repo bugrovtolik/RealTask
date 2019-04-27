@@ -14,7 +14,7 @@ public class Application {
         try {
             Map<String, String> env = System.getenv();
             Class<?> cl = env.getClass();
-            Field field = cl.getDeclaredField("JAVA_TOOL_OPTIONS");
+            Field field = cl.getDeclaredField("m");
             field.setAccessible(true);
             Map<String, String> writableEnv = (Map<String, String>) field.get(env);
             writableEnv.put("JAVA_TOOL_OPTIONS", System.getenv("JAVA_TOOL_OPTIONS") + " -Djdk.http.auth.proxying.disabledSchemes= -Djdk.http.auth.tunneling.disabledSchemes=");

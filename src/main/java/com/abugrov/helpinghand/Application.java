@@ -10,6 +10,7 @@ import java.util.Map;
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
+        System.out.println("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
         try {
             Map<String, String> env = System.getenv();
             Class<?> cl = env.getClass();

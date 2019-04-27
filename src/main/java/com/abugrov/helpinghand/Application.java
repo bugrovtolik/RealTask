@@ -10,7 +10,12 @@ import java.util.Map;
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
-        System.out.println("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
-        SpringApplication.run(Application.class, args);
+        String[] newArgs = new String[args.length + 1];
+        for (int i = 0; i < args.length; i++) {
+            newArgs[i] = args[i];
+        }
+        newArgs[args.length] = "-Djdk.http.auth.tunneling.disabledSchemes=";
+        System.out.println("newArgs is: " + newArgs[0] + " " + args.length);
+        SpringApplication.run(Application.class, newArgs);
     }
 }

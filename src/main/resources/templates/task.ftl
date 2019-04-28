@@ -30,7 +30,7 @@
             <h3>${task.title}</h3>
             <h4 class="text-primary mr-3">${task.price} грн</h4>
         </div>
-        <div class="mb-3 ml-1"><i class="fas fa-info mr-2"></i></i>${task.description}</div>
+        <div class="mb-3 ml-1"><i class="fas fa-info mr-2"></i>${task.description}</div>
         <div class="mb-3"><i class="fas fa-question mr-2"></i><#if secret??>${task.secret}<#else><span class="text-muted">Конфиденциальные данные задания (точный адрес, телефон и т.д.) будут доступны только выбранному исполнителю</span></#if>
     </div>
         <div id="${task.id}" style="width: 100%; height: 400px;"></div>

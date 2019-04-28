@@ -10,6 +10,9 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PBPayment {
     @XmlAttribute
+    private String id;
+
+    @XmlAttribute
     private Integer state;
 
     @XmlAttribute
@@ -88,5 +91,13 @@ public class PBPayment {
 
     public void addProp(PBProp prop) {
         this.prop.add(prop);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

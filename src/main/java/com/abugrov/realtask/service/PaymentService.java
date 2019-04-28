@@ -78,13 +78,14 @@ public class PaymentService {
         amt.setValue(amount.toString());
 
         PBPayment payment = new PBPayment();
+        payment.setId(UUID.randomUUID().toString());
         payment.addProp(phone);
         payment.addProp(amt);
 
         PBData data = new PBData();
         data.setOper("cmt");
         data.setWait(90);
-        data.setTest(1);
+        data.setTest(0);
         data.setPayment(payment);
 
         JAXBContext dataContext = JAXBContext.newInstance(PBData.class);

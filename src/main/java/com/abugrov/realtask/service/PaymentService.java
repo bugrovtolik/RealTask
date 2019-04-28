@@ -135,6 +135,7 @@ public class PaymentService {
         details.setValue("HelpingHandPayment");
 
         PBPayment payment = new PBPayment();
+        payment.setId(UUID.randomUUID().toString());
         payment.addProp(card);
         payment.addProp(amt);
         payment.addProp(ccy);
@@ -143,7 +144,7 @@ public class PaymentService {
         PBData data = new PBData();
         data.setOper("cmt");
         data.setWait(90);
-        data.setTest(1);
+        data.setTest(0);
         data.setPayment(payment);
 
         JAXBContext dataContext = JAXBContext.newInstance(PBData.class);
@@ -170,8 +171,8 @@ public class PaymentService {
         System.out.println(sw.toString());
         PrivatBankResponseDto response = restTemplate.postForObject(TO_CARD_URL, requestDto, PrivatBankResponseDto.class);
 
-        System.out.println("requestXml: " + response);
-        System.out.println(response != null ? response.getData().getPayment().getState() : "was null");
+        System.out.println("response_message: " + response.getData().getPayment().getMessage());
+        System.out.println("response_state: " + response.getData().getPayment().getState());
 
         return false;
     }

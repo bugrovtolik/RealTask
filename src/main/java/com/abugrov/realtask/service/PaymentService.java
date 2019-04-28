@@ -108,7 +108,7 @@ public class PaymentService {
         StringWriter sw = new StringWriter();
         marshaller.marshal(requestDto, sw);
 
-        String response = restTemplate.postForObject(TO_PHONE_URL, requestDto, String.class);
+        String response = restTemplate.postForObject(TO_PHONE_URL, sw.toString(), String.class);
 
         System.out.println("response: " + response);
         //System.out.println(response != null ? response.getData().getPayment().getState() : "was null");

@@ -1,8 +1,9 @@
 package com.abugrov.realtask.controller;
 
-import com.abugrov.realtask.domain.Contract;
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Comment;
+import com.abugrov.realtask.model.Contract;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
 import com.abugrov.realtask.service.ContractService;
 import com.abugrov.realtask.service.TaskService;
 import com.abugrov.realtask.service.UserService;
@@ -42,19 +43,23 @@ public class TaskController {
     public String getCreate(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("task", "null");
         model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+        model.addAttribute("categories", taskService.getCategories());
 
         return "taskCreate";
     }
 
     @PostMapping("/create")
-    public String create(@AuthenticationPrincipal User user,
-                         @Valid Task task,
-                         BindingResult bindingResult,
-                         Model model
+    public String create(
+            @AuthenticationPrincipal User user,
+            @Valid Task task,
+            BindingResult bindingResult,
+            Model model
     ) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = ControllerUtility.getErrors(bindingResult);
             model.mergeAttributes(errors);
+            model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+            model.addAttribute("categories", taskService.getCategories());
 
             return "taskCreate";
         }
@@ -90,6 +95,7 @@ public class TaskController {
         model.addAttribute(task);
         model.addAttribute("taskId", task.getId());
         model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+        model.addAttribute("categories", taskService.getCategories());
 
         return "taskEdit";
     }
@@ -111,15 +117,24 @@ public class TaskController {
             return "taskEdit";
         }
 
+        /*
+            безнал	неоплач	->	нал     ->  актив
+                    оплач	->	нал     ->	актив       возврат
+            безнал	неоплач	->	безнал  ->
+                    оплач	->	безнал  ->  не актив    возврат
+            нал             ->	нал     ->
+                            ->	безнал  ->  не актив
+         */
         if (!oldTask.isCashless() && newTask.isCashless()) {
             oldTask.setActive(false);
-        } else if (oldTask.isCashless() && !newTask.isCashless()) {
-            if (oldTask.isPaid()) {
-                if (userService.updateCredit(user, user.getCredit() + oldTask.getPrice())) {
-                    oldTask.setPaid(false);
-                }
+        } else if (oldTask.isCashless()) {
+            if (oldTask.isPaid() && userService.updateCredit(user, user.getCredit() + oldTask.getPrice())) {
+                oldTask.setPaid(false);
+                oldTask.setActive(false);
             }
-            oldTask.setActive(true);
+            if (!newTask.isCashless()) {
+                oldTask.setActive(true);
+            }
         }
 
         taskService.updateTask(oldTask, newTask);
@@ -168,11 +183,22 @@ public class TaskController {
             }
         } else {
             Contract completed = contractService.findByTaskAndCompleted(task);
+            Contract accepted = contractService.findByTaskAndAccepted(task);
             if (completed != null) {
                 model.addAttribute("completed", completed);
             }
+            if (accepted != null) {
+                model.addAttribute("accepted", accepted);
+            }
         }
+
+        List<Comment> comments = userService.getComments(task.getAuthor());
+
         model.addAttribute("task", task);
+        if (!comments.isEmpty()) {
+            model.addAttribute("rating", userService.getRating(comments));
+            model.addAttribute("votes", comments.size());
+        }
 
         return "task";
     }
@@ -194,7 +220,7 @@ public class TaskController {
         taskService.deactivate(task);
 
         if (task.isPaid()) {
-            contract.getUser().setCredit(contract.getUser().getCredit() + task.getPrice());
+            userService.updateCredit(contract.getUser(), contract.getUser().getCredit() + task.getPrice());
         }
 
         return "redirect:/task/" + task.getId();
@@ -207,18 +233,12 @@ public class TaskController {
             @AuthenticationPrincipal User user,
             @PathVariable("taskId") Task task
     ) {
-        Contract contract = contractService.findByTaskAndAccepted(task);
-
-        contract.setTime(LocalDateTime.now());
-        contract.setCompleted(false);
-        contractService.saveContract(contract);
+        if (task.isPaid()) {
+            userService.updateCredit(user, user.getCredit() + task.getPrice());
+        }
 
         contractService.deleteByTaskAndNotAccepted(task);
         taskService.deactivate(task);
-
-        if (task.isPaid()) {
-            user.setCredit(user.getCredit() + task.getPrice());
-        }
 
         return "redirect:/task/" + task.getId();
     }

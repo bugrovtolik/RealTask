@@ -1,8 +1,8 @@
 package com.abugrov.realtask.repos;
 
-import com.abugrov.realtask.domain.Contract;
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Contract;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,8 +18,6 @@ public interface ContractRepo extends JpaRepository<Contract, Long> {
     void deleteByTask(Task task);
 
     Contract findByUserAndTask(User user, Task task);
-
-    List<Contract> findByUserAndAccepted(User user, boolean b);
 
     List<Contract> findByUser(User user);
 

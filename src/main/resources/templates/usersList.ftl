@@ -6,9 +6,9 @@
 <table class="table table-hover">
     <thead>
     <tr>
-        <th>Name</th>
-        <th>Avatar</th>
-        <th>Role</th>
+        <th>Имя</th>
+        <th>Аватар</th>
+        <th>Роль</th>
         <th></th>
     </tr>
     </thead>
@@ -17,11 +17,11 @@
     <tr>
         <td>${user.username}</td>
         <td>
-            <#if user.avatar??>
-                <img width="32px" height="32px" src="/img/${user.avatar}">
-            <#else>
-                <img width="32px" height="32px" src="/img/guest.png">
-            </#if>
+        <#if user.avatar??>
+            <img width="32px" height="32px" src="/img/${user.avatar}">
+        <#else>
+            <img width="32px" height="32px" src="/img/guest.png">
+        </#if>
         </td>
         <td><#list user.roles as role>${role}<#sep>, </#list></td>
         <td><a href="/user/${user.id}">Редактировать</a></td>

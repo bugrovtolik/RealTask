@@ -1,4 +1,4 @@
-package com.abugrov.realtask.domain;
+package com.abugrov.realtask.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

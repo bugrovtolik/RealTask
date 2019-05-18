@@ -1,7 +1,10 @@
 package com.abugrov.realtask.service;
 
-import com.abugrov.realtask.domain.Role;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Comment;
+import com.abugrov.realtask.model.Payment;
+import com.abugrov.realtask.model.Role;
+import com.abugrov.realtask.model.User;
+import com.abugrov.realtask.repos.PaymentRepo;
 import com.abugrov.realtask.repos.UserRepo;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,13 +35,19 @@ public class UserService implements UserDetailsService {
     private String hostname;
 
     private final UserRepo userRepo;
+    private final PaymentRepo paymentRepo;
+    private final CommentService commentService;
     private final MailSender mailSender;
     private final Cloudinary cloudinary;
     public final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepo userRepo, MailSender mailSender, Cloudinary cloudinary, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepo userRepo, PaymentRepo paymentRepo,
+                       CommentService commentService, MailSender mailSender,
+                       Cloudinary cloudinary, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
+        this.paymentRepo = paymentRepo;
+        this.commentService = commentService;
         this.mailSender = mailSender;
         this.cloudinary = cloudinary;
         this.passwordEncoder = passwordEncoder;
@@ -102,8 +112,12 @@ public class UserService implements UserDetailsService {
 
         user.setActivationCode(null);
         user.setActive(true);
+        user.setCredit(0);
 
         userRepo.save(user);
+
+        Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return true;
     }
@@ -135,6 +149,9 @@ public class UserService implements UserDetailsService {
         }
 
         userRepo.save(user);
+
+        Authentication authentication = new PreAuthenticatedAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private void sendMessage(User user, String topic, String message) {
@@ -266,5 +283,59 @@ public class UserService implements UserDetailsService {
         }
 
         return false;
+    }
+
+    public boolean existComment(User author, User receiver) {
+        return commentService.findByAuthorAndReceiver(author, receiver) != null;
+    }
+
+    public void deleteComment(Comment comment) {
+        commentService.deleteComment(comment);
+    }
+
+    public boolean addComment(User author, User receiver, String text, Integer rating, LocalDateTime time) {
+        Comment comment = commentService.findByAuthorAndReceiver(author, receiver);
+
+        if (comment != null) {
+            return false;
+        }
+
+        comment = new Comment();
+
+        comment.setAuthor(author);
+        comment.setReceiver(receiver);
+        comment.setText(text);
+        comment.setRating(rating);
+        comment.setTime(time);
+
+        commentService.saveComment(comment);
+
+        return true;
+    }
+
+    public List<Comment> getComments(User user) {
+        return commentService.findByReceiver(user);
+    }
+
+    public String getRating(List<Comment> comments) {
+        int sum = 0;
+        for (Comment comment : comments) {
+            sum += comment.getRating();
+        }
+
+        String result = String.valueOf((double) sum / comments.size());
+        return result.length() > 3 ? result.substring(0,3) : result;
+    }
+
+    public void savePayment(Payment request) {
+        paymentRepo.save(request);
+    }
+
+    public void deletePayment(Payment request) {
+        paymentRepo.delete(request);
+    }
+
+    public List<Payment> getPayments() {
+        return paymentRepo.findAll();
     }
 }

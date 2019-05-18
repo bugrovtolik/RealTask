@@ -1,8 +1,8 @@
 package com.abugrov.realtask.service;
 
-import com.abugrov.realtask.domain.Contract;
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Contract;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
 import com.abugrov.realtask.repos.ContractRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,10 +22,6 @@ public class ContractService {
         return contractRepo.findByUserAndTask(user, task);
     }
 
-    public List<Contract> findByUserAndAccepted(User user) {
-        return contractRepo.findByUserAndAccepted(user, true);
-    }
-
     public List<Contract> findByUser(User user) {
         return contractRepo.findByUser(user);
     }
@@ -40,10 +36,6 @@ public class ContractService {
 
     public void saveContract(Contract contract) {
         contractRepo.save(contract);
-    }
-
-    public List<Contract> findAll() {
-        return contractRepo.findAll();
     }
 
     public void deleteByTaskAndNotAccepted(Task task) {

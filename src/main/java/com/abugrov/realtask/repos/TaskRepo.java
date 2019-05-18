@@ -1,7 +1,7 @@
 package com.abugrov.realtask.repos;
 
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -10,7 +10,7 @@
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
                 <a class="nav-link" href="/main">
-                    <img src="/img/logo.png">
+                    <img width="125px" height="50px" src="/img/logo.png">
                 </a>
             </li>
             <li class="nav-item my-auto">
@@ -20,7 +20,7 @@
                 <a class="nav-link" href="/archive">Архив</a>
             </li>
             <li class="nav-item my-auto">
-                <a class="nav-link" href="/mytasks/">Мои задания</a>
+                <a class="nav-link" href="/mytasks">Мои задания</a>
             </li>
             <li class="nav-item my-auto">
                 <a class="nav-link" href="/notifications">Уведомления</a>
@@ -29,12 +29,15 @@
             <li class="nav-item my-auto">
                 <a class="nav-link" href="/user">Пользователи</a>
             </li>
+            <li class="nav-item my-auto">
+                <a class="nav-link" href="/user/payment">Платежи</a>
+            </li>
         </#if>
         </ul>
 
         <div class="navbar-text mr-3">
-            <#if user??>
-                <a class="nav-link" href="/user/profile">
+            <#if user?? && user.id??>
+                <a class="nav-link" href="/user/${user.id}/profile">
                     ${user.credit} грн
                     <#if user.avatar??>
                         <img src="/img/${user.avatar}">

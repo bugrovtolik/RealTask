@@ -1,8 +1,10 @@
 package com.abugrov.realtask.controller;
 
-import com.abugrov.realtask.domain.Role;
-import com.abugrov.realtask.domain.User;
-import com.abugrov.realtask.domain.dto.LiqPayResponseDto;
+import com.abugrov.realtask.model.Comment;
+import com.abugrov.realtask.model.Payment;
+import com.abugrov.realtask.model.Role;
+import com.abugrov.realtask.model.User;
+import com.abugrov.realtask.model.dto.LiqPayResponseDto;
 import com.abugrov.realtask.service.PaymentService;
 import com.abugrov.realtask.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -35,7 +39,23 @@ public class UserController {
     public String userList(Model model) {
         model.addAttribute("users", userService.findAll());
 
-        return "userList";
+        return "usersList";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("payment")
+    public String paymentRequests(Model model) {
+        model.addAttribute("payments", userService.getPayments());
+
+        return "paymentList";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("payment/{paymentId}/delete")
+    public String deletePayment(@PathVariable("paymentId") Payment payment) {
+        userService.deletePayment(payment);
+
+        return "redirect:/user/payment";
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -44,7 +64,26 @@ public class UserController {
         model.addAttribute("user", user);
         model.addAttribute("roles", Role.values());
 
-        return "userEdit";
+        return "usersEdit";
+    }
+
+    @PostMapping("{userId}/addComment")
+    public String comment(
+            @PathVariable("userId") User receiver,
+            @AuthenticationPrincipal User author,
+            @RequestParam("text") String text,
+            @RequestParam("rating") Integer rating,
+            RedirectAttributes redirectAttrs
+    ) {
+        if (userService.addComment(author, receiver, text, rating, LocalDateTime.now())) {
+            redirectAttrs.addFlashAttribute("commentMessage", "Готово!");
+            redirectAttrs.addFlashAttribute("messageType", "success");
+        } else {
+            redirectAttrs.addFlashAttribute("commentMessage", "Вы уже оставляли комментарий об этом пользователе!");
+            redirectAttrs.addFlashAttribute("messageType", "danger");
+        }
+
+        return "redirect:/user/" + receiver.getId() + "/profile";
     }
 
     @PostMapping("{userId}/paid")
@@ -70,33 +109,35 @@ public class UserController {
             @RequestParam("amount") Integer amount,
             @RequestParam("by") String by,
             RedirectAttributes redirectAttrs
-    ) throws Exception {
+    ) {
         if (user.getCredit() >= amount) {
-            boolean success = false;
+            Payment request = new Payment();
+            request.setAmount(amount);
+            request.setReceiver(user);
 
             if (by.equals("phone")) {
-                System.out.println("trying by phone");
-                success = paymentService.transferToPhone(user, amount);
+                request.setByPhone(true);
                 by = " номер телефона ";
             } else if (by.equals("card")) {
-                System.out.println("trying by card");
-                success = paymentService.transferToPrivatCard(user, amount);
+                request.setByCard(true);
                 by = "у кредитную карту ";
             }
 
-            if (success && userService.updateCredit(user, user.getCredit() + amount)) {
-                redirectAttrs.addFlashAttribute("paymentMessage", "На Ваш" + by + "успешно переведены " + amount + " грн");
+            userService.savePayment(request);
+            if (userService.updateCredit(user, user.getCredit() - amount)) {
+                redirectAttrs.addFlashAttribute("paymentMessage",
+                        "Заявка о переводе " + amount + " грн на Ваш" + by + "отправлена! Ожидайте..");
                 redirectAttrs.addFlashAttribute("messageType", "success");
             } else {
                 redirectAttrs.addFlashAttribute("paymentMessage", "Ошибка!");
                 redirectAttrs.addFlashAttribute("messageType", "danger");
             }
         } else {
-            redirectAttrs.addFlashAttribute("paymentMessage", "Недостаточно денег!");
+            redirectAttrs.addFlashAttribute("paymentMessage", "Недостаточно средств!");
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
-        return "redirect:/user/profile";
+        return "redirect:/user/edit";
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -112,17 +153,44 @@ public class UserController {
         return "redirect:/user";
     }
 
-    @GetMapping("profile")
-    public String getProfile(Model model, @AuthenticationPrincipal User user) {
-        model.addAttribute("username", user.getUsername());
-        model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+    @GetMapping("{targetId}/comment/{commentId}/delete")
+    public String deleteComment(
+            @PathVariable("targetId") User target,
+            @PathVariable("commentId") Comment comment
+    ) {
+        userService.deleteComment(comment);
+
+        return "redirect:/user/" + target.getId() + "/profile";
+    }
+
+    @GetMapping("{userId}/profile")
+    public String getProfile(Model model, @AuthenticationPrincipal User user, @PathVariable("userId") User target) {
+        List<Comment> comments = userService.getComments(target);
+
+        model.addAttribute("target", target);
+        model.addAttribute("comments", comments);
+        if (!comments.isEmpty()) {
+            model.addAttribute("rating", userService.getRating(comments));
+            model.addAttribute("votes", comments.size());
+        }
+
+        if (userService.existComment(user, target)) {
+            model.addAttribute("commentMessage", "Вы уже оставляли комментарий об этом пользователе!");
+        }
 
         return "profile";
     }
 
+    @GetMapping("edit")
+    public String editProfile(Model model, @AuthenticationPrincipal User user) {
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+
+        return "userEdit";
+    }
+
     @PostMapping("payToService")
-    public RedirectView getPayToService(@RequestParam("amount") Integer amount,
-                                  @AuthenticationPrincipal User user) {
+    public RedirectView getPayToService(@RequestParam("amount") Integer amount, @AuthenticationPrincipal User user) {
         RedirectView redirectView = new RedirectView();
         redirectView.setUrl(paymentService.getHref(user, amount));
 
@@ -143,7 +211,7 @@ public class UserController {
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
-        return "redirect:/user/profile";
+        return "redirect:/user/" + user.getId() + "/profile";
     }
 
     @PostMapping("updateUsername")
@@ -160,7 +228,7 @@ public class UserController {
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
-        return "redirect:/user/profile";
+        return "redirect:/user/" + user.getId() + "/profile";
     }
 
     @PostMapping("updatePhoneNumber")
@@ -177,7 +245,7 @@ public class UserController {
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
-        return "redirect:/user/profile";
+        return "redirect:/user/" + user.getId() + "/profile";
     }
 
     @PostMapping("updateCreditCardNumber")
@@ -194,7 +262,7 @@ public class UserController {
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
-        return "redirect:/user/profile";
+        return "redirect:/user/" + user.getId() + "/profile";
     }
 
     @PostMapping("updatePassword")
@@ -218,7 +286,7 @@ public class UserController {
             redirectAttrs.addFlashAttribute("messageType", "danger");
         }
 
-        return "redirect:/user/profile";
+        return "redirect:/user/" + user.getId() + "/profile";
     }
 
     @GetMapping("recover/{code}")
@@ -232,6 +300,7 @@ public class UserController {
         }
 
         model.addAttribute("username", user.getUsername());
+
         return "recover";
     }
 

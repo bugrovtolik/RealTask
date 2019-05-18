@@ -1,149 +1,62 @@
 <#import "parts/common.ftl" as c>
+<#import "parts/modal.ftl" as m>
+<#include "parts/security.ftl">
 
 <@c.page>
-    <h5>${username}</h5>
-    <hr/>
-    <b>Изменение имени и фамилии:</b>
-    <#if usernameMessage??>
-        <div class="alert alert-${messageType}" role="alert">
-            ${usernameMessage}
+    <@m.comment/>
+
+<div class="row">
+    <div class="col-8 border-right m-3">
+    <#if comments??>
+        <#list comments as comment>
+        <div class="card mb-5">
+            <div class="card-header">
+                <div class="row ml-1">
+                <#if comment.authorAvatar??>
+                    <img width="32px" height="32px" src="/img/${comment.authorAvatar}">
+                <#else>
+                    <img width="32px" height="32px" src="/img/guest.png">
+                </#if>
+                    <h3 class="ml-2">${comment.author.username}</h3>
+                    <i class="ml-auto mt-auto">${comment.timeFormatted}</i>
+                <#if user.id == comment.author.id || isAdmin>
+                    <a class="close" href="/user/${target.id}/comment/${comment.id}/delete">×</a>
+                </#if>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-text">${comment.text}</h5>
+            </div>
         </div>
+        </#list>
     </#if>
-    <form method="post" action="/user/updateUsername">
-        <div class="form-group row">
-            <label class="col-sm-3 col-form-label">Новые имя и фамилия</label>
-            <div class="col-sm-6">
-                <input type="text" name="username" class="form-control" placeholder="Имя и фамилия" required/>
-            </div>
+    </div>
+    <div class="col m-3">
+        <div class="row justify-content-center mb-3">
+        <#if target.avatar??>
+            <img src="/img/${target.avatar}">
+        <#else>
+            <img src="/img/guest.png">
+        </#if>
+            <h3 class="m-2">${target.username}</h3>
         </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-    </form>
-    <hr/>
-    <b>Изменение пароля:</b>
-    <#if passwordMessage??>
-        <div class="alert alert-${messageType}" role="alert">
-            ${passwordMessage}
+        <div class="row justify-content-center">
+            <i class="fas fa-phone mr-2 mt-1"></i>${target.phoneNumber}
         </div>
+        <div class="row justify-content-center mt-2">
+            <i class="fas fa-star mr-2 mt-1"></i>Рейтинг автора: <#if rating??>${rating} / 10 (${votes} голосов)<#else>отсутствует</#if>
+        </div>
+        <hr/>
+    <#if user.id == target.id>
+        <div><a href="/user/edit" class="btn btn-outline-secondary mt-3 btn-block">Редактировать</a></div>
+    <#elseif commentMessage??>
+        <div class="alert alert-success" role="alert">
+            ${commentMessage}
+        </div>
+    <#else>
+        <div><a href="#leaveCommentModal" data-toggle="modal" class="btn btn-outline-dark mt-3 btn-block">Оставить комментарий</a></div>
     </#if>
-    <form method="post" action="/user/updatePassword">
-        <div class="form-group row">
-            <label class="col-sm-3 col-form-label">Текущий пароль</label>
-            <div class="col-sm-6">
-                <input type="password" name="oldpass" class="form-control" placeholder="Текущий" required/>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label class="col-sm-3 col-form-label">Новый пароль</label>
-            <div class="col-sm-6">
-                <input type="password" name="newpass" class="form-control" placeholder="Новый" required/>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label class="col-sm-3 col-form-label">Подтвердите новый пароль</label>
-            <div class="col-sm-6">
-                <input type="password" name="newpass2" class="form-control" placeholder="Повтор" required/>
-            </div>
-        </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-    </form>
-    <hr/>
-    <b>Изменение номера телефона:</b>
-    <#if phoneMessage??>
-        <div class="alert alert-${messageType}" role="alert">
-            ${phoneMessage}
-        </div>
-    </#if>
-    <form method="post" action="/user/updatePhoneNumber">
-        <div class="form-group row">
-            <label class="col-sm-3 col-form-label">Новый номер телефона</label>
-            <div class="input-group-prepend">
-                <div class="input-group-text">+38</div>
-            </div>
-            <div class="col-sm-2 pl-0">
-                <input type="text" maxlength="10" pattern="^0[0-9]{9}$" name="phoneNumber" class="form-control" placeholder="Номер телефона" required/>
-            </div>
-        </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-    </form>
-    <hr/>
-    <b>Изменение номера кредитной карты:</b>
-    <#if creditCardMessage??>
-        <div class="alert alert-${messageType}" role="alert">
-            ${creditCardMessage}
-        </div>
-    </#if>
-    <form method="post" action="/user/updateCreditCardNumber">
-        <div class="form-group row">
-            <label class="col-sm-3 col-form-label">Новый номер кредитной карты</label>
-            <div class="col-sm-2">
-                <input type="text" maxlength="16" pattern="^[0-9]{16}$" name="creditCardNumber" class="form-control" placeholder="Номер кредитной карты" required/>
-            </div>
-        </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-    </form>
-    <hr/>
-    <b>Изменение изображения профиля</b>
-    <#if avatarMessage??>
-        <div class="alert alert-${messageType}" role="alert">
-            ${avatarMessage}
-        </div>
-    </#if>
-    <form method="post" action="/user/updateAvatar" enctype="multipart/form-data">
-        <div class="form-group mt-2 col-3 pl-0">
-            <div class="custom-file">
-                <input type="file" class="custom-file-input" id="avatar" name="file"/>
-                <label class="custom-file-label text-truncate" for="avatar">Выберите файл</label>
-            </div>
-            <script>
-                $('#avatar').on('change',function() {
-                    $(this).next('.custom-file-label').html($(this).val().split('\\').pop());
-                })
-            </script>
-        </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-    </form>
-    <hr/>
-    <b>Пополнение счета:</b>
-    <form method="post" action="/user/payToService">
-        <div class="form-group row">
-            <label class="col-sm-1 col-form-label">Сумма</label>
-            <div class="col-2">
-                <input type="number" min="1" name="amount" class="form-control" placeholder="Сумма" required/>
-            </div>
-            <div class="col-2">
-                <button formtarget="_blank" class="btn btn-outline-success btn-block" type="submit">Пополнить счет</button>
-            </div>
-        </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-    </form>
-    <hr/>
-    <b>Снятие средств со счета:</b>
-    <#if paymentMessage??>
-        <div class="alert alert-${messageType}" role="alert">
-            ${paymentMessage}
-        </div>
-    </#if>
-    <form method="post" action="/user/payToUser">
-        <div class="form-group row">
-            <label class="col-sm-1 col-form-label">Сумма</label>
-            <div class="col-sm-2">
-                <input type="number" min="1" name="amount" class="form-control" placeholder="Сумма" required/>
-            </div>
-            <div class="col-2 btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-dark active">
-                    <input type="radio" name="by" id="phone" value="phone" autocomplete="off" checked> На телефон
-                </label>
-                <label class="btn btn-outline-dark">
-                    <input type="radio" name="by" id="card" value="card" autocomplete="off" <#if !hasCreditCard>disabled</#if>> На карту ПриватБанка
-                </label>
-            </div>
-        </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <button class="btn btn-primary" type="submit">Отправить</button>
-    </form>
+    </div>
+</div>
+
 </@c.page>

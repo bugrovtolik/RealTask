@@ -1,6 +1,6 @@
 package com.abugrov.realtask.repos;
 
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepo extends JpaRepository<User, Long> {

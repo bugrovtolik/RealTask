@@ -1,4 +1,4 @@
-package com.abugrov.realtask.domain;
+package com.abugrov.realtask.model;
 
 import org.springframework.security.core.GrantedAuthority;
 

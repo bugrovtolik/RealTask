@@ -14,13 +14,13 @@
             center: [${task.lat}, ${task.lng}],
             zoom: 12
         });
-<#if secret??>
-    DG.marker([${task.lat}, ${task.lng}], {
-        draggable: false
-    }).addTo(map);
-<#else>
-    DG.circle([${task.lat}, ${task.lng}], 500, {color: 'red'}).addTo(map);
-</#if>
+    <#if secret??>
+        DG.marker([${task.lat}, ${task.lng}], {
+            draggable: false
+        }).addTo(map);
+    <#else>
+        DG.circle([${task.lat}, ${task.lng}], 500, {color: 'red'}).addTo(map);
+    </#if>
     });
 </script>
 
@@ -28,11 +28,12 @@
     <div class="col-8 border-right m-3">
         <div class="d-flex justify-content-between mb-3">
             <h3>${task.title}</h3>
-            <h4 class="text-primary mr-3">${task.price} грн</h4>
+            <h4 class="text-primary ml-auto">${task.price} грн</h4>
+            <h5 class="pt-1 ml-3">(<#if task.cashless>Безнал.расчёт<#else>Наличными</#if>)</h5>
         </div>
         <div class="mb-3 ml-1"><i class="fas fa-info mr-2"></i>${task.description}</div>
-        <div class="mb-3"><i class="fas fa-question mr-2"></i><#if secret??>${task.secret}<#else><span class="text-muted">Конфиденциальные данные задания (точный адрес, телефон и т.д.) будут доступны только выбранному исполнителю</span></#if>
-    </div>
+        <div class="mb-3"><i class="fas fa-question mr-2"></i><#if secret??>${task.secret}<#else><span class="text-muted">Конфиденциальные данные задания (точный адрес, телефон и т.д.) будут доступны только выбранному исполнителю</span></#if></div>
+        <div class="mb-3"><i class="fas fa-th-list mr-3"></i>${task.category.parent.name}<i class="fas fa-chevron-right mx-3"></i>${task.category.name}</div>
         <div id="${task.id}" style="width: 100%; height: 400px;"></div>
         <hr/>
     <#if completed??>
@@ -56,6 +57,7 @@
             </div>
         </div>
     <#elseif accepted??>
+    <a href="/user/${accepted.user.id}/profile" class="btn text-dark">
         <div class="card mb-2">
             <div class="card-header">
                 <div class="row ml-1">
@@ -64,13 +66,19 @@
                 <#else>
                     <img width="32px" height="32px" src="/img/guest.png">
                 </#if>
+                <#if task.active>
                     <h5 class="ml-2">${accepted.userName} выполнит это задание!</h5>
                     <i class="ml-auto mt-auto">${accepted.timeFormatted}</i>
+                <#else>
+                    <h5 class="ml-2">${accepted.userName} не выполнил это задание!</h5>
+                </#if>
                 </div>
             </div>
         </div>
+    </a>
     <#elseif contracts??>
     <#list contracts as contract>
+    <a href="/user/${contract.user.id}/profile" class="btn text-dark">
         <div class="card mb-2">
             <div class="card-header">
                 <div class="row ml-1">
@@ -79,7 +87,7 @@
                 <#else>
                     <img width="32px" height="32px" src="/img/guest.png">
                 </#if>
-                    <h3 class="ml-2">${contract.userName}</h3>
+                    <h4 class="ml-2">${contract.userName}</h4>
                     <i class="ml-auto mt-auto">${contract.timeFormatted}</i>
                 </div>
             </div>
@@ -92,17 +100,26 @@
             </#if>
             </div>
         </div>
+    </a>
     </#list>
     </#if>
     </div>
     <div class="col m-3">
-        <div class="row m-3">
+        <div class="row justify-content-center mb-3">
+            <a href="/user/${task.authorId}/profile" class="btn text-dark"><h3>
             <#if task.authorAvatar??>
-                <img src="/img/${task.authorAvatar}">
+                <img class="mr-2" src="/img/${task.authorAvatar}">
             <#else>
-                <img src="/img/guest.png">
+                <img class="mr-2" src="/img/guest.png">
             </#if>
-            <h3 class="m-2">${task.authorName}</h3>
+            ${task.authorName}</h3>
+            </a>
+        </div>
+        <div class="row justify-content-center">
+            <i class="fas fa-phone mr-2 mt-1"></i>${task.authorPhoneNumber}
+        </div>
+        <div class="row justify-content-center mt-2">
+            <i class="fas fa-star mr-2 mt-1"></i>Рейтинг автора: <#if rating??>${rating} / 10 (${votes} голосов)<#else>отсутствует</#if>
         </div>
         <hr/>
     <#if !task.isActive()>

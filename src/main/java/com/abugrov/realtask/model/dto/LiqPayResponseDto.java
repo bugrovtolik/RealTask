@@ -1,7 +1,8 @@
-package com.abugrov.realtask.domain.dto;
+package com.abugrov.realtask.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
 /**
  * @link https://www.liqpay.com/ru/doc/callback
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         getterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE
 )
+@Data
 public class LiqPayResponseDto {
     public enum Status {
         // Конечные статусы платежа
@@ -68,40 +70,4 @@ public class LiqPayResponseDto {
     private String public_key;
     private Integer amount;
     private String currency;
-
-    public Long getPaymentId() {
-        return payment_id;
-    }
-
-    public String getErrCode() {
-        return err_code;
-    }
-
-    public String getErrDescription() {
-        return err_description;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public String getSenderPhone() {
-        return sender_phone;
-    }
-
-    public String getOrderId() {
-        return order_id;
-    }
-
-    public String getPublicKey() {
-        return public_key;
-    }
-
-    public Integer getAmount() {
-        return amount;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
 }

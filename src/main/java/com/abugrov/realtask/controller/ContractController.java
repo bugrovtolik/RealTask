@@ -1,8 +1,8 @@
 package com.abugrov.realtask.controller;
 
-import com.abugrov.realtask.domain.Contract;
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Contract;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
 import com.abugrov.realtask.service.ContractService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +28,8 @@ public class ContractController {
             @RequestParam("taskId") Task task,
             @RequestParam(required = false, defaultValue = "") String text
     ) {
-        Contract contract = new Contract(task, user, LocalDateTime.now(), text);
+        LocalDateTime time = LocalDateTime.now();
+        Contract contract = new Contract(task, user, time, text);
 
         contractService.saveContract(contract);
 

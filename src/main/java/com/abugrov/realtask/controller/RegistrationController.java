@@ -1,7 +1,7 @@
 package com.abugrov.realtask.controller;
 
-import com.abugrov.realtask.domain.User;
-import com.abugrov.realtask.domain.dto.CaptchaResponseDto;
+import com.abugrov.realtask.model.User;
+import com.abugrov.realtask.model.dto.CaptchaResponseDto;
 import com.abugrov.realtask.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

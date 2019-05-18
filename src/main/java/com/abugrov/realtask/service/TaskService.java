@@ -1,20 +1,28 @@
 package com.abugrov.realtask.service;
 
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Category;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
+import com.abugrov.realtask.repos.CategoryRepo;
 import com.abugrov.realtask.repos.TaskRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class TaskService {
     private final TaskRepo taskRepo;
+    private final CategoryRepo categoryRepo;
 
     @Autowired
-    public TaskService(TaskRepo taskRepo) {
+    public TaskService(TaskRepo taskRepo, CategoryRepo categoryRepo) {
         this.taskRepo = taskRepo;
+        this.categoryRepo = categoryRepo;
     }
 
     public void saveTask(Task task) {
@@ -40,7 +48,21 @@ public class TaskService {
         return taskRepo.findByTitleAndActive(filter, true, pageable);
     }
 
-    public void deleteTask(Task task) { taskRepo.delete(task); }
+    public Map<Category, List<Category>> getCategories() {
+        Map<Category, List<Category>> categories = new LinkedHashMap<>();
+
+        List<Category> parents = categoryRepo.findAllByParentIsNull();
+
+        for (Category parent : parents) {
+            categories.put(parent, categoryRepo.findAllByParent(parent));
+        }
+
+        return categories;
+    }
+
+    public void deleteTask(Task task) {
+        taskRepo.delete(task);
+    }
 
     public void updateTask(Task oldTask, Task newTask) {
         oldTask.setTitle(newTask.getTitle());
@@ -52,6 +74,7 @@ public class TaskService {
         oldTask.setExecTo(newTask.getExecToFormatted());
         oldTask.setPrice(newTask.getPrice());
         oldTask.setCashless(newTask.isCashless());
+        oldTask.setCategory(newTask.getCategory());
 
         taskRepo.save(oldTask);
     }

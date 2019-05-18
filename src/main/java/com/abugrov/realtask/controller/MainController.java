@@ -1,8 +1,8 @@
 package com.abugrov.realtask.controller;
 
-import com.abugrov.realtask.domain.Contract;
-import com.abugrov.realtask.domain.Task;
-import com.abugrov.realtask.domain.User;
+import com.abugrov.realtask.model.Contract;
+import com.abugrov.realtask.model.Task;
+import com.abugrov.realtask.model.User;
 import com.abugrov.realtask.service.ContractService;
 import com.abugrov.realtask.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +68,7 @@ public class MainController {
         return "archive";
     }
 
-    @GetMapping("notifications")
+    @GetMapping("/notifications")
     public String notifications(
             Model model,
             @AuthenticationPrincipal User user
@@ -84,7 +84,7 @@ public class MainController {
         return "notifications";
     }
 
-    @GetMapping("mytasks")
+    @GetMapping("/mytasks")
     public String mytasks(
             Model model,
             @AuthenticationPrincipal User user,

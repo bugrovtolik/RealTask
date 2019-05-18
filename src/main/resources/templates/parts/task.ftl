@@ -62,10 +62,23 @@
 
 <form action="${path}" method="post" onsubmit="if (!validateMap(this)) event.preventDefault();" id="newtask">
     <div class="form-group">
+        <label>Категория:</label>
+        <select class="form-control" name="category" required>
+            <#list categories as parent, children>
+            <optgroup label="${parent.name}">
+                <#list children as child>
+                    <option value="${child.id}" <#if task != 'null' && task.category.id == child.id>selected</#if>>${child.name}</option>
+                </#list>
+            </optgroup>
+            </#list>
+        </select>
+    </div>
+
+    <div class="form-group">
         <label>Заголовок:</label>
         <input type="text" class="form-control${(titleError??)?string(' is-invalid', '')}"
                value="<#if task != 'null'>${task.title}</#if>" name="title" size="40"
-               placeholder="Что нужно сделать?"<#if create> required</#if>/>
+               placeholder="Что нужно сделать?" required/>
         <#if titleError??>
             <div class="invalid-feedback">
                 ${titleError}
@@ -76,7 +89,7 @@
     <div class="form-group">
         <label>Подробнее:</label>
         <textarea class="form-control${(descriptionError??)?string(' is-invalid', '')}"
-                  rows="10" name="description" placeholder="Подробно опишите ваше задание"<#if create> required</#if>><#if task != 'null'>${task.description}</#if></textarea>
+                  rows="10" name="description" placeholder="Подробно опишите ваше задание" required><#if task != 'null'>${task.description}</#if></textarea>
         <#if descriptionError??>
             <div class="invalid-feedback">
                 ${descriptionError}
@@ -110,7 +123,7 @@
                        class="form-control datetimepicker-input${(execFromError?? || fromBeforeToError??)?string(' is-invalid', '')}"
                        id="execFrom" data-toggle="datetimepicker"
                        data-target="#execFrom" autocomplete="off"
-                       placeholder="От"<#if create> required</#if>/>
+                       placeholder="От" required/>
             <#if execFromError??>
                 <div class="invalid-feedback">
                     ${execFromError}
@@ -126,12 +139,12 @@
                        class="form-control datetimepicker-input${(execToError?? || fromBeforeToError??)?string(' is-invalid', '')}"
                        id="execTo" data-toggle="datetimepicker"
                        data-target="#execTo" autocomplete="off"
-                       placeholder="До"<#if create> required</#if>/>
+                       placeholder="До" required/>
             </div>
 
             <div class="form-inline mb-2">
                 <label>Оплата работы:</label>
-                <input type="number" name="price" value="<#if task != 'null'>${task.price}</#if>" class="form-control mx-2" min="0" placeholder="Цена"<#if create> required</#if>/>грн
+                <input type="number" name="price" value="<#if task != 'null'>${task.price}</#if>" class="form-control mx-2" min="0" placeholder="Цена" required/>грн
             </div>
 
             <div class="form-group">

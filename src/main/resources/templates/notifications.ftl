@@ -5,10 +5,9 @@
     <div class="card mb-2">
         <div class="card-header">
     <#list contracts as contract>
-    <#if contract.isAccepted()??>
-        <#if contract.isAccepted()>
-            <#if !contract.isCompleted()??>
-                <a class="close" href="/contract/${contract.id}/delete">Отказаться</a>
+    <#if contract.accepted??>
+        <#if contract.accepted>
+            <#if !contract.completed??>
                 <div>Дата вашей заявки на выполнение: ${contract.timeFormatted}</div>
                 <div>Задание: <a href="/task/${contract.task.id}">${contract.task.title}</a></div>
             </div>

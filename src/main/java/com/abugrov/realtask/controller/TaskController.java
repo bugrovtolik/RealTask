@@ -113,6 +113,8 @@ public class TaskController {
             Map<String, String> errors = ControllerUtility.getErrors(bindingResult);
             model.mergeAttributes(errors);
             model.addAttribute("taskId", oldTask.getId());
+            model.addAttribute("hasCreditCard", StringUtils.hasText(user.getCreditCardNumber()));
+            model.addAttribute("categories", taskService.getCategories());
 
             return "taskEdit";
         }

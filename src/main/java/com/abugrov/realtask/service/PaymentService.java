@@ -7,10 +7,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.liqpay.LiqPay;
 import com.liqpay.LiqPayUtil;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -27,15 +25,7 @@ public class PaymentService {
     @Value("${hostname}")
     private String host;
 
-    private final RestTemplate restTemplate;
-
-    private final static String W4P_URL = "https://api.fondy.eu/api/p2pcredit/";
     private final static ObjectReader OBJECT_READER = new ObjectMapper().readerFor(LiqPayResponseDto.class);
-
-    @Autowired
-    public PaymentService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
 
     public String getHref(User user, Integer amount) {
         Map<String, String> params = new HashMap<>();

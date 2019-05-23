@@ -62,7 +62,7 @@
     <a href="/user/${accepted.user.id}/profile" class="btn text-dark">
         <div class="card mb-2">
             <div class="card-header">
-                <div class="row>
+                <div class="row">
                     <div class="col">
                     <#if accepted.userAvatar??>
                         <img width="32px" height="32px" src="/img/${accepted.userAvatar}">
@@ -70,7 +70,7 @@
                         <img width="32px" height="32px" src="/img/guest.png">
                     </#if>
                     </div>
-                    <div class="col>
+                    <div class="col">
                         <#if task.active>
                         <div class="row mr-1">
                             <h5 class="ml-2">${accepted.userName} выполнит это задание!</h5>
@@ -79,9 +79,8 @@
                             <i class="ml-auto mt-auto">${accepted.timeFormatted}</i>
                         </div>
                         <#else>
-                            <h5 class="ml-2">${accepted.userName} не выполнил это задание!</h5>
+                        <h5 class="ml-2">${accepted.userName} не выполнил это задание!</h5>
                         </#if>
-                        </div>
                     </div>
                 </div>
             </div>

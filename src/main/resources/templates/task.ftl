@@ -38,8 +38,8 @@
         <hr/>
     <#if completed??>
         <div><h4>Выполнено</h4></div>
-    <a href="/user/${completed.user.id}/profile" class="btn text-dark">
-        <div class="card mb-2 col-5">
+    <a href="/user/${completed.user.id}/profile" class="btn text-dark p-0">
+        <div class="card mb-2 col px-0">
             <div class="card-header">
                 <div class="d-flex">
                     <div class="mr-3">

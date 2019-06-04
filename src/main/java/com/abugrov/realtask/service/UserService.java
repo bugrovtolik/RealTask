@@ -82,7 +82,7 @@ public class UserService implements UserDetailsService {
                 "Приветсвуем Вас, %s!\n" +
                 "Благодарим за регистрацию на сайте RealTask.\n" +
                 "Пожалуйста, проследуйте по следующей ссылке для завершения " +
-                "регистрации: http://%s/activate/%s",
+                "регистрации: %s/activate/%s",
                 user.getUsername(), hostname, user.getActivationCode()
         );
 
@@ -167,7 +167,7 @@ public class UserService implements UserDetailsService {
 
         String message = String.format(
             "Приветсвуем Вас, %s!\n" +
-            "Пройдите по ссылке для создания нового пароля: http://%s/user/recover/%s",
+            "Пройдите по ссылке для создания нового пароля: %s/user/recover/%s",
             user.getUsername(), hostname, user.getActivationCode()
         );
 
